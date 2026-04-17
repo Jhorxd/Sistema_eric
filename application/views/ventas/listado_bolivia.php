@@ -48,8 +48,8 @@
                         <tr>
                             <th class="px-4 py-3">ID / Fecha</th>
                             <th class="px-4 py-3">Distribuidor</th>
+                            <th class="px-4 py-3 text-center">Tipo</th>
                             <th class="px-4 py-3">Celular de cliente</th>
-                            <th class="px-4 py-3">Total</th>
                             <th class="px-4 py-3">Comisión</th>
                             <th class="px-4 py-3">Por pagar</th>
                             <th class="px-4 py-3">Pagado</th>
@@ -89,20 +89,24 @@
                             </small>
                         </td>
 
-                            <td class="px-4 py-3">
-                                <div class="font-semibold text-slate-800">
-                                    <?= $v->nombre ?>
                                 </div>
-                                <div class="text-xs text-gray-500 flex items-center gap-1">
-                                    <i class="fas fa-id-card"></i>
-                                    <?= $v->nit ?>
-                                </div>
+                            </td>
+
+                            <td class="px-4 py-3 text-center">
+                                <?php if($v->tipo_venta == 'ENVIO'): ?>
+                                    <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold">ENVIO</span>
+                                <?php else: ?>
+                                    <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold">DELIVERY</span>
+                                <?php endif; ?>
                             </td>
 
                             <td class="px-4 py-3">
                                 <div class="font-semibold text-slate-800">
                                     <?= $v->celular_cliente ?>
                                 </div>
+                                <?php if(!empty($v->destino)): ?>
+                                    <div class="text-[10px] text-blue-600 font-bold"><i class="fas fa-truck"></i> <?= $v->destino ?></div>
+                                <?php endif; ?>
                             </td>
 
                             <td class="px-4 py-3 whitespace-nowrap">

@@ -64,12 +64,21 @@
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">
-                                    Destino <span class="text-red-500">*</span>
+                                    Tipo de Venta <span class="text-red-500">*</span>
+                                </label>
+                                <select name="tipo_venta" id="tipo_venta" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="DELIVERY" selected>DELIVERY</option>
+                                    <option value="ENVIO">ENVIO (Provincias)</option>
+                                </select>
+                            </div>
+
+                            <div id="div_destino" style="display: none;">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">
+                                    Destino (Agencia/Dirección exacta) <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" 
                                     name="destino" 
                                     id="destino" 
-                                    required
                                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all invalid:border-red-300" 
                                     placeholder="Calle, Nro o Nombre de Agencia">
                             </div>
@@ -392,6 +401,17 @@ function initModuloVentas($) {
             e.preventDefault();
             Swal.fire('Error de Stock', 'Revise las cantidades antes de continuar.', 'error');
             return false;
+        }
+    });
+
+    // --- LÓGICA TIPO VENTA (ENVIO/DELIVERY) ---
+    $(document).on('change', '#tipo_venta', function() {
+        if ($(this).val() === 'ENVIO') {
+            $('#div_destino').slideDown();
+            $('#destino').attr('required', true);
+        } else {
+            $('#div_destino').slideUp();
+            $('#destino').removeAttr('required').val('');
         }
     });
 }

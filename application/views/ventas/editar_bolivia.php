@@ -75,13 +75,20 @@
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-l-4 border-l-blue-500">
                         <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
                             <h5 class="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
-                                <i class="fas fa-truck text-blue-500"></i> Información de destino
+                                <i class="fas fa-truck text-blue-500"></i> Tipo y Destino
                             </h5>
                         </div>
                         <div class="p-6 space-y-4">
-
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Destino</label>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Tipo de Venta</label>
+                                <select name="tipo_venta" id="tipo_venta" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                    <option value="DELIVERY" <?= (isset($venta->tipo_venta) && $venta->tipo_venta == 'DELIVERY') ? 'selected' : '' ?>>DELIVERY</option>
+                                    <option value="ENVIO" <?= (isset($venta->tipo_venta) && $venta->tipo_venta == 'ENVIO') ? 'selected' : '' ?>>ENVIO (Provincias)</option>
+                                </select>
+                            </div>
+
+                            <div id="div_destino" style="<?= (isset($venta->tipo_venta) && $venta->tipo_venta == 'ENVIO') ? '' : 'display: none;' ?>">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Destino (Dirección/Agencia)</label>
                                 <input type="text" name="destino" id="destino" value="<?= $venta->destino ?>" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" placeholder="Calle, Nro o Nombre de Agencia">
                             </div>
 
@@ -356,10 +363,20 @@
                 // EL CAMBIO: Sumar la comisión al total final
                 var totalFinal = subtotalProds; 
 
-                $('#subtotal_productos_texto').text(subtotalProds.toFixed(2));
                 $('#total_final_texto').text(totalFinal.toFixed(2));
                 $('#total_final_val').val(totalFinal.toFixed(2));
             }
+
+            // --- LÓGICA TIPO VENTA (ENVIO/DELIVERY) ---
+            $(document).on('change', '#tipo_venta', function() {
+                if ($(this).val() === 'ENVIO') {
+                    $('#div_destino').slideDown();
+                    $('#destino').attr('required', true);
+                } else {
+                    $('#div_destino').slideUp();
+                    $('#destino').removeAttr('required').val('');
+                }
+            });
     }
 })(window.jQuery || window.$);
 

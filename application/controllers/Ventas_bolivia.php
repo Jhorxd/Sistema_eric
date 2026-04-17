@@ -89,6 +89,7 @@ public function guardar_cotizacion() {
             'celular'           => $this->input->post('celular'),
             'celular_cliente'   => $this->input->post('celular_cliente'),
             'ubicacion'         => $this->input->post('ubicacion'),
+            'tipo_venta'        => $this->input->post('tipo_venta'),
             'destino'           => $this->input->post('destino'),
             'total_venta'       => $total,
             'comision_delivery' => $comision_delivery,
@@ -349,6 +350,7 @@ public function editar_venta($id) {
         'nit'          => $this->input->post('nit'),
         'nombre'       => $this->input->post('nombre'),
         'celular'      => $this->input->post('celular'),
+        'tipo_venta'   => $this->input->post('tipo_venta'),
         'destino'      => $this->input->post('destino'),
         'comision_delivery'      => $this->input->post('comision_delivery'),
         'total_venta'  => $total
