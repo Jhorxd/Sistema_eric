@@ -194,6 +194,11 @@
 
                                                 <!-- ID oculto del producto final -->
                                                 <input type="hidden" name="producto_id[]" class="input-producto-id" required>
+
+                                                <!-- Vista previa del stock -->
+                                                <div class="text-[10px] text-slate-400 mt-1 stock-preview hidden">
+                                                    Stock disponible: <span class="stock-val font-bold text-slate-600">0</span>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-4 py-5" data-label="Cantidad">
@@ -386,12 +391,18 @@ function initModuloVentas($) {
                 $fila.find('.input-precio').val(parseFloat(producto.precio_venta).toFixed(2));
                 // Guardamos el stock en un data attribute para validación
                 $inputID.data('stock', producto.stock);
+                
+                // Mostrar stock en la UI
+                $fila.find('.stock-val').text(producto.stock);
+                $fila.find('.stock-preview').removeClass('hidden');
+
                 actualizarSubtotalFila($fila);
             }
         } else {
             $inputID.val('');
             $fila.find('.input-precio').val('');
             $fila.find('.subtotal-text').text('0.00');
+            $fila.find('.stock-preview').addClass('hidden');
         }
         calcularTotales();
     });
@@ -429,6 +440,7 @@ function initModuloVentas($) {
         $nuevaFila.find('input').val('');
         $nuevaFila.find('.input-cant').val(1);
         $nuevaFila.find('.subtotal-text').text('0.00');
+        $nuevaFila.find('.stock-preview').addClass('hidden');
 
         $tbody.append($nuevaFila);
         popularNombres($nuevaFila.find('.select-nombre-prod'));
