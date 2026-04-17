@@ -27,29 +27,51 @@
                             </h5>
                         </div>
                         <div class="p-6 space-y-4">
+                            <?php if (isset($distribuidor_logueado)): ?>
+                                <input type="hidden" name="id_distribuidor" value="<?= $distribuidor_logueado->id ?>">
+                            <?php endif; ?>
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">NIT</label>
                                 <div class="flex gap-2">
-                                    <input type="text" name="nit" id="nit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="Ingrese NIT..." required>
-                                    <button type="button" onclick="buscarDistribuidor()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl transition-colors shadow-md shadow-indigo-100">
-                                        <i class="fas fa-search"></i>
-                                    </button>
+                                    <input type="text" name="nit" id="nit" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" 
+                                        placeholder="Ingrese NIT..." 
+                                        value="<?= isset($distribuidor_logueado) ? $distribuidor_logueado->nit : '' ?>"
+                                        <?= isset($distribuidor_logueado) ? 'readonly' : '' ?>
+                                        required>
+                                    <?php if (!isset($distribuidor_logueado)): ?>
+                                        <button type="button" onclick="buscarDistribuidor()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl transition-colors shadow-md shadow-indigo-100">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nombre Completo / Razón Social</label>
-                                <input type="text" name="nombre" id="nombre" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" required placeholder="Nombre del distribuidor">
+                                <input type="text" name="nombre" id="nombre" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                    value="<?= isset($distribuidor_logueado) ? $distribuidor_logueado->nombre : '' ?>"
+                                    <?= isset($distribuidor_logueado) ? 'readonly' : '' ?>
+                                    required placeholder="Nombre del distribuidor">
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Celular</label>
-                                    <input type="text" name="celular" id="celular" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" placeholder="70000000">
+                                    <input type="text" name="celular" id="celular" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" 
+                                        value="<?= isset($distribuidor_logueado) ? $distribuidor_logueado->celular : '' ?>"
+                                        <?= isset($distribuidor_logueado) ? 'readonly' : '' ?>
+                                        placeholder="70000000">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Ciudad</label>
-                                    <input type="text" name="ubicacion" id="ubicacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" placeholder="Ej: La Paz">
+                                    <input type="text" name="ubicacion" id="ubicacion" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" 
+                                        value="<?= isset($distribuidor_logueado) ? $distribuidor_logueado->destino : '' ?>"
+                                        <?= isset($distribuidor_logueado) ? 'readonly' : '' ?>
+                                        placeholder="Ej: La Paz">
                                 </div>
                             </div>
                         </div>
@@ -57,52 +79,32 @@
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-l-4 border-l-blue-500">
                         <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
                             <h5 class="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
-                                <i class="fas fa-truck text-blue-500"></i> Información de destino
+                                <i class="fas fa-truck text-blue-500"></i> Tipo y Destino
                             </h5>
                         </div>
                         <div class="p-6 space-y-4">
-
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">
-                                    Tipo de Venta <span class="text-red-500">*</span>
-                                </label>
-                                <select name="tipo_venta" id="tipo_venta" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="DELIVERY" selected>DELIVERY</option>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Tipo de Venta</label>
+                                <select name="tipo_venta" id="tipo_venta" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                    <option value="DELIVERY">DELIVERY</option>
                                     <option value="ENVIO">ENVIO (Provincias)</option>
                                 </select>
                             </div>
 
                             <div id="div_destino" style="display: none;">
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">
-                                    Destino (Agencia/Dirección exacta) <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" 
-                                    name="destino" 
-                                    id="destino" 
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all invalid:border-red-300" 
-                                    placeholder="Calle, Nro o Nombre de Agencia">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Destino (Dirección/Agencia)</label>
+                                <input type="text" name="destino" id="destino" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" placeholder="Calle, Nro o Nombre de Agencia">
                             </div>
 
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">
-                                    Celular cliente <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" 
-                                    name="celular_cliente" 
-                                    id="celular_cliente" 
-                                    required
-                                    pattern="[0-9]+"
-                                    title="Por favor, ingrese solo números"
-                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all invalid:border-red-300" 
-                                    placeholder="70000000">
+                             <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Celular cliente</label>
+                                <input type="text" name="celular_cliente" id="celular_cliente" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" placeholder="70000000">
                             </div>
                         </div>
                     </div>
                 </div>
 
-
-
-                <div id="panel-productos" class="xl:col-span-8 space-y-6 hidden">
+                <div id="panel-productos" class="xl:col-span-8 space-y-6 <?= isset($distribuidor_logueado) ? '' : 'hidden' ?>">den">
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="px-8 py-6 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
                             <h3 class="font-black text-slate-800 text-lg flex items-center gap-3 italic">
@@ -131,7 +133,16 @@
                                     <tr class="fila-venta">
                                         <td class="px-8 py-5">
                                             <select name="producto_id[]" id="primer-select-prod" class="w-full bg-transparent border-b-2 border-slate-100 py-2 focus:border-indigo-500 outline-none text-sm font-semibold select-prod" required>
-                                                <option value="">-- Busque un distribuidor primero --</option>
+                                                <?php if (isset($distribuidor_logueado)): ?>
+                                                    <option value="">-- Seleccione Producto --</option>
+                                                    <?php foreach($productos as $p): ?>
+                                                        <option value="<?= $p->id ?>" data-precio="<?= $p->precio_venta ?>" data-stock="<?= $p->stock ?>">
+                                                            <?= $p->nombre ?> <?= $p->color ?> <?= $p->talla ?> | Stock: <?= $p->stock ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <option value="">-- Busque un distribuidor primero --</option>
+                                                <?php endif; ?>
                                             </select>
                                         </td>
                                         <td class="px-4 py-5">

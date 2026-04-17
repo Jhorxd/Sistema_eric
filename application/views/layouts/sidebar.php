@@ -186,14 +186,16 @@ p {
 <nav class="mt-2">
 <ul class="nav nav-pills nav-sidebar flex-column">
 
+<?php if ($this->session->userdata('rol') == 'admin'): ?>
 <li class="nav-item">
 <a href="<?= base_url('dashboard') ?>" class="nav-link">
 <i class="nav-icon fas fa-home"></i>
 <p>Dashboard</p>
 </a>
 </li>
+<?php endif; ?>
 
-<?php if ($this->session->userdata('pais') == 'peru'): ?>
+<?php if ($this->session->userdata('rol') == 'admin' && $this->session->userdata('pais') == 'peru'): ?>
     <li class="nav-header">MÓDULO PERÚ</li>
 
     <li class="nav-item">
@@ -257,6 +259,7 @@ p {
         </a>
     </li>
 
+    <?php if ($this->session->userdata('rol') == 'admin'): ?>
     <li class="nav-item">
         <a href="<?= base_url('productos_bolivia') ?>" class="nav-link">
             <i class="nav-icon fas fa-cubes"></i>
@@ -296,6 +299,7 @@ p {
             <i class="fas fa-money-bill-wave"></i> <span>Totales Alfredo</span>
         </a>
     </li>
+    <?php endif; ?>
 
 <?php endif; ?>
 

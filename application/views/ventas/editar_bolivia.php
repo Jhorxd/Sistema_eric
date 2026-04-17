@@ -38,16 +38,24 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">NIT / CI</label>
                                 <div class="flex gap-2">
-                                    <input type="text" name="nit" id="nit" value="<?= $venta->nit ?>" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all" required>
-                                    <button type="button" id="btn-buscar-cliente" onclick="buscarDistribuidor()" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl hover:bg-black transition-colors shadow-md">
-                                        <i class="fas fa-search"></i>
-                                    </button>
+                                    <input type="text" name="nit" id="nit" value="<?= $venta->nit ?>" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
+                                        <?= ($this->session->userdata('rol') == 'distribuidor') ? 'readonly' : '' ?>
+                                        required>
+                                    <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                                        <button type="button" id="btn-buscar-cliente" onclick="buscarDistribuidor()" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl hover:bg-black transition-colors shadow-md">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nombre Completo</label>
-                                <input type="text" name="nombre" id="nombre" value="<?= $venta->nombre ?>" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all" required>
+                                <input type="text" name="nombre" id="nombre" value="<?= $venta->nombre ?>" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
+                                    <?= ($this->session->userdata('rol') == 'distribuidor') ? 'readonly' : '' ?>
+                                    required>
                             </div>
 
                             <div>
@@ -56,7 +64,9 @@
                                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                                         <i class="fas fa-mobile-alt text-xs"></i>
                                     </span>
-                                    <input type="text" name="celular" id="celular" value="<?= $venta->celular ?>" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                                    <input type="text" name="celular" id="celular" value="<?= $venta->celular ?>" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500"
+                                        <?= ($this->session->userdata('rol') == 'distribuidor') ? 'readonly' : '' ?>>
                                 </div>
                             </div>
 
@@ -66,7 +76,9 @@
                                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                                         <i class="fas fa-map-marker-alt text-blue-500"></i>
                                     </span>
-                                    <input type="text" name="ubicacion" id="ubicacion" value="<?= $venta->ubicacion ?>" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all">
+                                    <input type="text" name="ubicacion" id="ubicacion" value="<?= $venta->ubicacion ?>" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                                        <?= ($this->session->userdata('rol') == 'distribuidor') ? 'readonly' : '' ?>>
                                 </div>
                             </div>
                         </div>

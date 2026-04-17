@@ -47,9 +47,12 @@
                     <thead class="bg-slate-100 text-slate-700 uppercase text-xs tracking-wider">
                         <tr>
                             <th class="px-4 py-3">ID / Fecha</th>
-                            <th class="px-4 py-3">Distribuidor</th>
+                            <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                                <th class="px-4 py-3">Distribuidor</th>
+                            <?php endif; ?>
                             <th class="px-4 py-3 text-center">Tipo</th>
                             <th class="px-4 py-3">Celular de cliente</th>
+                            <th class="px-4 py-3 text-right">Total Venta</th>
                             <th class="px-4 py-3">Comisión</th>
                             <th class="px-4 py-3">Por pagar</th>
                             <th class="px-4 py-3">Pagado</th>
@@ -80,8 +83,6 @@
 
                         ?>
 
-                        <tr class="hover:bg-slate-50">
-
                         <td class="px-4 py-3" data-order="<?= strtotime($v->fecha) ?>">
                             <strong>#<?= $v->id ?></strong><br>
                             <small class="text-slate-500">
@@ -89,8 +90,19 @@
                             </small>
                         </td>
 
+                        <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                                        <?= substr($v->nombre ?? 'D', 0, 1) ?>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-slate-700 leading-none"><?= $v->nombre ?></span>
+                                        <small class="text-slate-500 italic mt-0.5">Bolivia</small>
+                                    </div>
                                 </div>
                             </td>
+                        <?php endif; ?>
 
                             <td class="px-4 py-3 text-center">
                                 <?php if($v->tipo_venta == 'ENVIO'): ?>

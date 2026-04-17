@@ -39,12 +39,31 @@ class Ventas_bolivia extends CI_Controller {
     public function nueva_cotizacion() {
         $data['distribuidores'] = $this->db->get('distribuidores_bolivia')->result();
         
-        // Traemos todos los productos de Bolivia sin el filtro 'tipo'
-        $data['productos'] = $this->db->get('productos_bolivia')->result();
+        if ($this->session->userdata('rol') == 'distribuidor') {
+            $id_dist = $this->session->userdata('id_distribuidor');
+            $this->db->where('id_distribuidor', $id_dist);
+            $data['productos'] = $this->db->get('productos_bolivia')->result();
+            $data['distribuidor_logueado'] = $this->db->get_where('distribuidores_bolivia', ['id' => $id_dist])->row();
+        } else {
+            $data['productos'] = $this->db->get('productos_bolivia')->result();
+        }
 
         $this->load->view('layouts/header');
         $this->load->view('layouts/sidebar');
         $this->load->view('ventas/cotizacion_bolivia', $data);
+        $this->load->view('layouts/footer');
+    }
+
+    public function listado() {
+        if ($this->session->userdata('rol') == 'distribuidor') {
+            $this->db->where('id_distribuidor', $this->session->userdata('id_distribuidor'));
+        }
+        $this->db->order_by('id', 'DESC');
+        $data['ventas'] = $this->db->get('ventas_bolivia')->result();
+
+        $this->load->view('layouts/header');
+        $this->load->view('layouts/sidebar');
+        $this->load->view('ventas/listado_bolivia', $data);
         $this->load->view('layouts/footer');
     }
 
@@ -55,23 +74,15 @@ class Ventas_bolivia extends CI_Controller {
     }
 
 public function guardar_cotizacion() {
-
-    // 0. Cargar el modelo de inventario
     $this->load->model('Inventario_model');
 
-    // 1. Recoger datos principales
     $adelanto          = (float)$this->input->post('adelanto');
     $alfredo           = (float)$this->input->post('alfredo'); 
     $total             = (float)$this->input->post('total_final'); 
     $comision_delivery = (float)$this->input->post('comision_delivery'); 
-    
-    // FORZAMOS ESTADO APROBADO: Para que el sistema descuente stock "de frente"
     $estado_envio      = 'Aprobado'; 
-    
-    // CAPTURAR FECHA/HORA desde el formulario y normalizarla
-    $fecha_con_hora = $this->normalizar_fecha_hora($this->input->post('fecha'));
+    $fecha_con_hora    = $this->normalizar_fecha_hora($this->input->post('fecha'));
 
-    // Determinar estado de pago
     $estado_pago = 'Pendiente';
     if ($adelanto >= $total && $total > 0) { 
         $estado_pago = 'Completado'; 
@@ -79,10 +90,15 @@ public function guardar_cotizacion() {
         $estado_pago = 'Parcial'; 
     }
 
-    $this->db->trans_start(); // INICIO DE TRANSACCIÓN
+    // Determinar ID Distribuidor
+    $id_distribuidor = $this->input->post('id_distribuidor');
+    if ($this->session->userdata('rol') == 'distribuidor') {
+        $id_distribuidor = $this->session->userdata('id_distribuidor');
+    }
 
-        // 2. Insertar en tabla ventas_bolivia
+    $this->db->trans_start();
         $data_venta = [
+            'id_distribuidor'   => $id_distribuidor,
             'fecha'             => $fecha_con_hora,
             'nit'               => $this->input->post('nit'),
             'nombre'            => $this->input->post('nombre'),
@@ -95,7 +111,7 @@ public function guardar_cotizacion() {
             'comision_delivery' => $comision_delivery,
             'total_pagado'      => $adelanto,
             'estado_pago'       => $estado_pago,
-            'estado_envio'      => $estado_envio // <--- Guardamos ya aprobado
+            'estado_envio'      => $estado_envio
         ];
         
         $this->db->insert('ventas_bolivia', $data_venta);
@@ -245,16 +261,7 @@ public function registrar_abono_ajax() {
     ]);
 }
 
-    public function listado() {
-    // Traemos las ventas ordenadas por la más reciente
-    $this->db->order_by('fecha', 'DESC');
-    $data['ventas'] = $this->db->get('ventas_bolivia')->result();
 
-    $this->load->view('layouts/header');
-    $this->load->view('layouts/sidebar');
-    $this->load->view('ventas/listado_bolivia', $data);
-    $this->load->view('layouts/footer');
-    }
 
     // Función AJAX para ver el detalle de una venta sin recargar la página
 public function ver_detalle_ajax($id_venta) {

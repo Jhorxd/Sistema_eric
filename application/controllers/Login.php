@@ -11,7 +11,8 @@ class Login extends CI_Controller {
 
         $query = $this->db->get_where('usuarios', [
             'usuario' => $usuario,
-            'password' => $password
+            'password' => $password,
+            'estado' => 1
         ]);
 
         if($query->num_rows() > 0){
@@ -20,13 +21,19 @@ class Login extends CI_Controller {
             $this->session->set_userdata([
                 'id' => $user->id,
                 'usuario' => $user->usuario,
+                'nombre' => $user->nombre,
+                'rol' => $user->rol,
+                'id_distribuidor' => $user->id_distribuidor,
                 'pais' => $user->pais
             ]);
 
-            redirect('dashboard');
+            if ($user->rol == 'distribuidor') {
+                redirect('ventas_bolivia/nueva_cotizacion');
+            } else {
+                redirect('dashboard');
+            }
 
         } else {
-            // Guardar mensaje de error en flashdata
             $this->session->set_flashdata('login_error', 'Usuario o contraseña incorrectos');
             redirect('login');
         }
