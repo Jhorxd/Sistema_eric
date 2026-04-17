@@ -164,18 +164,37 @@
                                 <tbody class="divide-y divide-slate-50">
                                     <tr class="fila-venta">
                                         <td class="px-8 py-5" data-label="Producto">
-                                            <select name="producto_id[]" id="primer-select-prod" class="w-full bg-transparent border-b-2 border-slate-100 py-2 focus:border-indigo-500 outline-none text-sm font-semibold select-prod" required>
-                                                <?php if (isset($distribuidor_logueado)): ?>
-                                                    <option value="">-- Seleccione Producto --</option>
-                                                    <?php foreach($productos as $p): ?>
-                                                        <option value="<?= $p->id ?>" data-precio="<?= $p->precio_venta ?>" data-stock="<?= $p->stock ?>">
-                                                            <?= $p->nombre ?> <?= $p->color ?> <?= $p->talla ?> | Stock: <?= $p->stock ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <option value="">-- Busque un distribuidor primero --</option>
-                                                <?php endif; ?>
-                                            </select>
+                                            <div class="flex flex-col gap-2">
+                                                <!-- Seleccionador de Nombre -->
+                                                <select class="w-full bg-transparent border-b-2 border-slate-100 py-2 focus:border-indigo-500 outline-none text-sm font-semibold select-nombre-prod" required>
+                                                    <?php if (isset($distribuidor_logueado)): ?>
+                                                        <option value="">-- Seleccione Producto --</option>
+                                                        <?php 
+                                                            $nombres_unicos = array_unique(array_column($productos, 'nombre'));
+                                                            foreach($nombres_unicos as $nombre): 
+                                                        ?>
+                                                            <option value="<?= $nombre ?>"><?= $nombre ?></option>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <option value="">-- Busque un distribuidor primero --</option>
+                                                    <?php endif; ?>
+                                                </select>
+                                                
+                                                <div class="flex gap-2">
+                                                    <!-- Seleccionador de Talla -->
+                                                    <select class="w-1/2 bg-transparent border-b-2 border-slate-100 py-2 focus:border-indigo-500 outline-none text-sm font-semibold select-talla-prod" disabled required>
+                                                        <option value="">-- Talla --</option>
+                                                    </select>
+                                                    
+                                                    <!-- Seleccionador de Color -->
+                                                    <select class="w-1/2 bg-transparent border-b-2 border-slate-100 py-2 focus:border-indigo-500 outline-none text-sm font-semibold select-color-prod" disabled required>
+                                                        <option value="">-- Color --</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- ID oculto del producto final -->
+                                                <input type="hidden" name="producto_id[]" class="input-producto-id" required>
+                                            </div>
                                         </td>
                                         <td class="px-4 py-5" data-label="Cantidad">
                                             <input type="number" name="cant[]" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-center font-bold input-cant" value="1" min="1">
@@ -279,65 +298,112 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+var listaProductosGlobal = <?= isset($productos) ? json_encode($productos) : '[]' ?>;
+
 function initModuloVentas($) {
-    console.log("⚙️ Inicializando Módulo de Ventas (Stock, Comisión y Exclusión)...");
+    console.log("⚙️ Inicializando Módulo de Ventas (Cascading Selection)...");
 
-    function aplicarSelect2(selector = '.select-prod') {
-        $(selector).select2({
-            theme: 'bootstrap4',
-            placeholder: "-- Seleccione Producto --",
-            allowClear: true,
-            width: '100%'
+    function popularNombres($select) {
+        if (!listaProductosGlobal.length) return;
+        let nombres = [...new Set(listaProductosGlobal.map(p => p.nombre))];
+        let options = '<option value="">-- Seleccione Producto --</option>';
+        nombres.forEach(n => {
+            options += `<option value="${n}">${n}</option>`;
         });
+        $select.html(options);
     }
 
-    // --- NUEVA FUNCIÓN: EVITAR PRODUCTOS DUPLICADOS ---
-    function actualizarDisponibilidadProductos() {
-        var seleccionados = [];
+    // Inicializar la primera fila si ya hay productos
+    if (listaProductosGlobal.length > 0) {
+        popularNombres($('.select-nombre-prod'));
+    }
 
-        // 1. Recolectar IDs seleccionados
-        $('.select-prod').each(function() {
-            var val = $(this).val();
-            if (val && val !== "") seleccionados.push(val.toString());
-        });
+    // --- EVENTOS DE CASCADA ---
 
-        // 2. Deshabilitar opciones en los otros selects
-        $('.select-prod').each(function() {
-            var $select = $(this);
-            var miValor = $select.val() ? $select.val().toString() : "";
+    // 1. Cambio de Nombre -> Cargar Tallas
+    $(document).on('change', '.select-nombre-prod', function() {
+        var $fila = $(this).closest('.fila-venta');
+        var nombre = $(this).val();
+        var $selectTalla = $fila.find('.select-talla-prod');
+        var $selectColor = $fila.find('.select-color-prod');
+        var $inputID = $fila.find('.input-producto-id');
 
-            $select.find('option').each(function() {
-                var optVal = $(this).val() ? $(this).val().toString() : "";
-                if (optVal !== "") {
-                    // Si el producto ya está en otra fila, lo bloqueamos en esta
-                    if (seleccionados.includes(optVal) && optVal !== miValor) {
-                        $(this).prop('disabled', true);
-                    } else {
-                        $(this).prop('disabled', false);
-                    }
-                }
+        // Resetear siguientes pasos
+        $selectTalla.html('<option value="">-- Talla --</option>').prop('disabled', true);
+        $selectColor.html('<option value="">-- Color --</option>').prop('disabled', true);
+        $inputID.val('');
+        $fila.find('.input-precio').val('');
+        $fila.find('.subtotal-text').text('0.00');
+
+        if (nombre) {
+            let tallas = [...new Set(listaProductosGlobal.filter(p => p.nombre === nombre).map(p => p.talla))];
+            let options = '<option value="">-- Talla --</option>';
+            tallas.forEach(t => {
+                options += `<option value="${t}">${t}</option>`;
             });
+            $selectTalla.html(options).prop('disabled', false);
+        }
+        calcularTotales();
+    });
 
-            // Forzar a Select2 a refrescar la vista
-            if ($select.data('select2')) {
-                $select.trigger('change.select2');
+    // 2. Cambio de Talla -> Cargar Colores
+    $(document).on('change', '.select-talla-prod', function() {
+        var $fila = $(this).closest('.fila-venta');
+        var nombre = $fila.find('.select-nombre-prod').val();
+        var talla = $(this).val();
+        var $selectColor = $fila.find('.select-color-prod');
+        var $inputID = $fila.find('.input-producto-id');
+
+        // Resetear color e ID
+        $selectColor.html('<option value="">-- Color --</option>').prop('disabled', true);
+        $inputID.val('');
+        $fila.find('.input-precio').val('');
+        $fila.find('.subtotal-text').text('0.00');
+
+        if (talla) {
+            let colores = [...new Set(listaProductosGlobal.filter(p => p.nombre === nombre && p.talla === talla).map(p => p.color))];
+            let options = '<option value="">-- Color --</option>';
+            colores.forEach(c => {
+                options += `<option value="${c}">${c}</option>`;
+            });
+            $selectColor.html(options).prop('disabled', false);
+        }
+        calcularTotales();
+    });
+
+    // 3. Cambio de Color -> Finalizar selección y cargar datos
+    $(document).on('change', '.select-color-prod', function() {
+        var $fila = $(this).closest('.fila-venta');
+        var nombre = $fila.find('.select-nombre-prod').val();
+        var talla = $fila.find('.select-talla-prod').val();
+        var color = $(this).val();
+        var $inputID = $fila.find('.input-producto-id');
+
+        if (color) {
+            let producto = listaProductosGlobal.find(p => p.nombre === nombre && p.talla === talla && p.color === color);
+            if (producto) {
+                $inputID.val(producto.id);
+                $fila.find('.input-precio').val(parseFloat(producto.precio_venta).toFixed(2));
+                // Guardamos el stock en un data attribute para validación
+                $inputID.data('stock', producto.stock);
+                actualizarSubtotalFila($fila);
             }
-        });
-    }
-
-    aplicarSelect2();
+        } else {
+            $inputID.val('');
+            $fila.find('.input-precio').val('');
+            $fila.find('.subtotal-text').text('0.00');
+        }
+        calcularTotales();
+    });
 
     // --- FUNCIÓN DE CÁLCULO MAESTRO ---
     function calcularTotales() {
-
         var subtotalProductos = 0;
         $('.subtotal-text').each(function() {
             subtotalProductos += parseFloat($(this).text()) || 0;
         });
 
-        var comisionDelivery = parseFloat($('#comision_delivery').val()) || 0;
         var alfredo = parseFloat($('#alfredo').val()) || 0;
-
         var totalGeneral = subtotalProductos - alfredo;
 
         $('#subtotal_productos_texto').text(subtotalProductos.toFixed(2));
@@ -349,44 +415,23 @@ function initModuloVentas($) {
         calcularTotales();
     });
 
-    // --- AGREGAR PRODUCTO (CON EXCLUSIÓN) ---
+    // --- AGREGAR PRODUCTO ---
     $(document).on('click', '#btn-add-producto', function(e) {
         e.preventDefault();
         var $tbody = $('#tabla-ventas tbody');
         var $filaMolde = $tbody.find('.fila-venta').first();
 
-        if ($filaMolde.find('.select-prod').data('select2')) {
-            $filaMolde.find('.select-prod').select2('destroy');
-        }
-
         var $nuevaFila = $filaMolde.clone();
-        aplicarSelect2($filaMolde.find('.select-prod')); 
-
-        $nuevaFila.find('.select2-container').remove(); 
-        $nuevaFila.find('select').removeClass('select2-hidden-accessible').removeAttr('data-select2-id').val('');
-        // Importante: habilitar opciones en el clon por si el molde tenía algo bloqueado
-        $nuevaFila.find('select option').prop('disabled', false);
         
+        // Resetear valores en la nueva fila
+        $nuevaFila.find('select').val('').prop('disabled', true);
+        $nuevaFila.find('.select-nombre-prod').prop('disabled', false);
         $nuevaFila.find('input').val('');
         $nuevaFila.find('.input-cant').val(1);
         $nuevaFila.find('.subtotal-text').text('0.00');
 
         $tbody.append($nuevaFila);
-        aplicarSelect2($nuevaFila.find('.select-prod')); 
-        
-        // Sincronizar después de agregar
-        actualizarDisponibilidadProductos();
-    });
-
-    // --- EVENTOS DE CAMBIO ---
-    $(document).on('change', '.select-prod', function() {
-        var $fila = $(this).closest('tr');
-        var precio = $(this).find(':selected').data('precio') || 0;
-        $fila.find('.input-precio').val(parseFloat(precio).toFixed(2));
-        
-        // Sincronizar disponibles al cambiar selección
-        actualizarDisponibilidadProductos();
-        actualizarSubtotalFila($fila);
+        popularNombres($nuevaFila.find('.select-nombre-prod'));
     });
 
     $(document).on('input', '.input-cant, .input-precio', function() {
@@ -396,7 +441,6 @@ function initModuloVentas($) {
     $(document).on('click', '.btn-remove-row', function() {
         if ($('.fila-venta').length > 1) {
             $(this).closest('tr').remove();
-            actualizarDisponibilidadProductos(); // Liberar producto
             calcularTotales();
         } else {
             Swal.fire('Atención', 'El pedido debe tener al menos un producto.', 'warning');
@@ -404,14 +448,14 @@ function initModuloVentas($) {
     });
 
     function actualizarSubtotalFila($fila) {
-        var $select = $fila.find('.select-prod');
+        var $inputID = $fila.find('.input-producto-id');
         var $inputCant = $fila.find('.input-cant');
         
-        var stockDisponible = parseInt($select.find(':selected').data('stock')) || 0;
+        var stockDisponible = parseInt($inputID.data('stock')) || 0;
         var cant = parseFloat($inputCant.val()) || 0;
         var precio = parseFloat($fila.find('.input-precio').val()) || 0;
 
-        if ($select.val() !== "" && cant > stockDisponible) {
+        if ($inputID.val() !== "" && cant > stockDisponible) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Stock Insuficiente',
@@ -422,7 +466,7 @@ function initModuloVentas($) {
             $inputCant.val(cant);
         }
 
-        var subtotal = precio;
+        var subtotal = precio; // Solo precio, como estaba antes
         $fila.find('.subtotal-text').text(subtotal.toFixed(2));
         calcularTotales();
     }
@@ -430,12 +474,22 @@ function initModuloVentas($) {
     $('#formVenta').on('submit', function(e) {
         var total = parseFloat($('#total_final_val').val()) || 0;
         var hayErrorStock = false;
+        var hayProductoIncompleto = false;
 
         $('.fila-venta').each(function() {
-            var s = parseInt($(this).find('.select-prod :selected').data('stock')) || 0;
+            var id = $(this).find('.input-producto-id').val();
+            if (!id) hayProductoIncompleto = true;
+
+            var s = parseInt($(this).find('.input-producto-id').data('stock')) || 0;
             var c = parseInt($(this).find('.input-cant').val()) || 0;
             if (c > s) hayErrorStock = true;
         });
+
+        if (hayProductoIncompleto) {
+            e.preventDefault();
+            Swal.fire('Error', 'Debe terminar de seleccionar el producto (Talla y Color) en todas las filas.', 'error');
+            return false;
+        }
 
         if (total <= 0) {
             e.preventDefault();
@@ -450,7 +504,6 @@ function initModuloVentas($) {
         }
     });
 
-    // --- LÓGICA TIPO VENTA (ENVIO/DELIVERY) ---
     $(document).on('change', '#tipo_venta', function() {
         if ($(this).val() === 'ENVIO') {
             $('#div_destino').slideDown();
@@ -468,25 +521,25 @@ function buscarDistribuidor() {
 
     $.post('<?= base_url("distribuidores/buscar_por_nit") ?>', {nit: nit}, function(res) {
         if(res && res !== null) {
-            // 1. Llenar datos del distribuidor
             $('#nombre').val(res.nombre);
             $('#celular').val(res.celular);
             $('#ubicacion').val(res.destino);
             
-            // 2. BUSCAR PRODUCTOS DE ESTE DISTRIBUIDOR
             $.post('<?= base_url("distribuidores/obtener_productos_por_distribuidor") ?>', {distribuidor_id: res.id}, function(productos) {
-                let options = '<option value="">-- Seleccione Producto --</option>';
-                
-                productos.forEach(function(p) {
-                    options += `<option value="${p.id}" data-precio="${p.precio_venta}" data-stock="${p.stock}">
-                                    ${p.nombre} ${p.color} ${p.talla} ${p.detalles} | Stock: ${p.stock}
-                                </option>`;
-                });
+                // Actualizar lista global
+                listaProductosGlobal = productos;
 
-                // Llenamos todos los selects de productos que existan
-                $('.select-prod').html(options);
+                // Llenar todos los nombres de productos en las filas existentes
+                $('.select-nombre-prod').each(function() {
+                    let $select = $(this);
+                    let nombres = [...new Set(listaProductosGlobal.map(p => p.nombre))];
+                    let options = '<option value="">-- Seleccione Producto --</option>';
+                    nombres.forEach(n => {
+                        options += `<option value="${n}">${n}</option>`;
+                    });
+                    $select.html(options);
+                });
                 
-                // 3. Mostramos el panel
                 $('#panel-productos').removeClass('hidden').fadeIn();
             }, 'json');
 

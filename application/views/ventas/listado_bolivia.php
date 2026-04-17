@@ -163,32 +163,28 @@
 
             <div class="w-full md:overflow-visible overflow-x-auto">
 
-                <table id="tabla-listado-ventas" class="min-w-[900px] w-full text-sm text-left">
-
-                    <thead class="bg-slate-100 text-slate-700 uppercase text-xs tracking-wider">
+                <table id="tabla-listado-ventas" class="min-w-[900px] w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
                         <tr>
-                            <th class="px-4 py-3">ID / Fecha</th>
+                            <th class="px-4 py-4 text-left">ID / Fecha</th>
                             <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
-                                <th class="px-4 py-3">Distribuidor</th>
+                                <th class="px-4 py-4 text-left">Distribuidor</th>
                             <?php endif; ?>
-                            <th class="px-4 py-3 text-center">Tipo</th>
-                            <th class="px-4 py-3">Celular de cliente</th>
-                            <th class="px-4 py-3 text-right">Total Venta</th>
-                            <th class="px-4 py-3">Comisión</th>
-                            <th class="px-4 py-3">Por pagar</th>
-                            <th class="px-4 py-3">Pagado</th>
-                            <th class="px-4 py-3">Estado Pago</th>
-                            <th class="px-4 py-3">Estado Envío</th>
-                            <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
-                                <th class="px-4 py-3 text-center">Acciones</th>
-                            <?php endif; ?>
+                            <th class="px-4 py-4 text-center">Tipo</th>
+                            <th class="px-4 py-4 text-left">Celular Cliente</th>
+                            <th class="px-4 py-4 text-right">Total Venta</th>
+                            <th class="px-4 py-4 text-right">Comisión</th>
+                            <th class="px-4 py-4 text-right">Por Pagar</th>
+                            <th class="px-4 py-4 text-right">Pagado</th>
+                            <th class="px-4 py-4 text-center">Pago</th>
+                            <th class="px-4 py-4 text-center">Envío</th>
+                            <th class="px-4 py-4 text-center">Acciones</th>
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y">
+                    <tbody class="divide-y divide-slate-100">
 
                         <?php foreach($ventas as $v): 
-
                             $saldo_inicial = $v->total_venta - $v->comision_delivery;
                             $saldo = $saldo_inicial - $v->total_pagado;
 
@@ -203,116 +199,97 @@
                                 : (($v->estado_envio == 'Aprobado')
                                 ? 'bg-cyan-100 text-cyan-700'
                                 : 'bg-gray-200 text-gray-700');
-
                         ?>
-
-                        <td class="px-4 py-3" data-order="<?= strtotime($v->fecha) ?>" data-label="ID / Fecha">
-                            <strong>#<?= $v->id ?></strong><br>
-                            <small class="text-slate-500">
-                                <?= date('d/m/Y H:i', strtotime($v->fecha)) ?>
-                            </small>
-                        </td>
-
-                        <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
-                            <td class="px-4 py-3 whitespace-nowrap" data-label="Distribuidor">
-                                <div class="flex items-center gap-3 justify-end md:justify-start">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs order-2 md:order-1">
-                                        <?= substr($v->nombre ?? 'D', 0, 1) ?>
-                                    </div>
-                                    <div class="flex flex-col order-1 md:order-2 text-right md:text-left">
-                                        <span class="font-semibold text-slate-700 leading-none"><?= $v->nombre ?></span>
-                                        <small class="text-slate-500 italic mt-0.5">Bolivia</small>
-                                    </div>
-                                </div>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-4 py-4" data-order="<?= strtotime($v->fecha) ?>" data-label="ID / Fecha">
+                                <div class="font-bold text-slate-900">#<?= $v->id ?></div>
+                                <div class="text-[10px] text-slate-400 font-medium"><?= date('d/m/Y H:i', strtotime($v->fecha)) ?></div>
                             </td>
-                        <?php endif; ?>
 
-                            <td class="px-4 py-3 text-center" data-label="Tipo">
+                            <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                                <td class="px-4 py-4" data-label="Distribuidor">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-[10px]">
+                                            <?= substr($v->nombre ?? 'D', 0, 1) ?>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-slate-700 text-xs"><?= $v->nombre ?></span>
+                                            <span class="text-[9px] text-slate-400 uppercase font-black tracking-tighter">Bolivia</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            <?php endif; ?>
+
+                            <td class="px-4 py-4 text-center" data-label="Tipo">
                                 <?php if($v->tipo_venta == 'ENVIO'): ?>
-                                    <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold">ENVIO</span>
+                                    <span class="bg-purple-50 text-purple-600 border border-purple-100 px-2 py-0.5 rounded text-[10px] font-black">ENVÍO</span>
                                 <?php else: ?>
-                                    <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold">DELIVERY</span>
+                                    <span class="bg-slate-50 text-slate-600 border border-slate-100 px-2 py-0.5 rounded text-[10px] font-black">DELIVERY</span>
                                 <?php endif; ?>
                             </td>
 
-                            <td class="px-4 py-3" data-label="Celular">
-                                <div class="font-semibold text-slate-800">
-                                    <?= $v->celular_cliente ?>
-                                </div>
+                            <td class="px-4 py-4" data-label="Celular">
+                                <div class="font-bold text-slate-700 text-xs"><?= $v->celular_cliente ?: 'N/A' ?></div>
                                 <?php if(!empty($v->destino)): ?>
-                                    <div class="text-[10px] text-blue-600 font-bold"><i class="fas fa-truck"></i> <?= $v->destino ?></div>
+                                    <div class="text-[9px] text-blue-500 font-bold flex items-center gap-1">
+                                        <i class="fas fa-truck-loading text-[8px]"></i> <?= $v->destino ?>
+                                    </div>
                                 <?php endif; ?>
                             </td>
 
-                            <td class="px-4 py-3 whitespace-nowrap" data-label="Total Venta">
-                                Bs. <?= number_format($v->total_venta, 2) ?>
+                            <td class="px-4 py-4 text-right font-bold text-slate-700" data-label="Total Venta">
+                                <span class="text-[10px] text-slate-400 mr-1">Bs.</span><?= number_format($v->total_venta, 2) ?>
                             </td>
 
-                            <td class="px-4 py-3 whitespace-nowrap" data-label="Comisión">
-                                Bs. <?= number_format($v->comision_delivery, 2) ?>
+                            <td class="px-4 py-4 text-right text-slate-500 font-medium" data-label="Comisión">
+                                <span class="text-[10px] text-slate-300 mr-1">Bs.</span><?= number_format($v->comision_delivery, 2) ?>
                             </td>
 
-                            <td class="px-4 py-3 font-bold <?= ($saldo > 0) ? 'text-red-600' : 'text-gray-500' ?>" data-label="Saldo">
-                                Bs. <?= number_format($saldo, 2) ?>
+                            <td class="px-4 py-4 text-right font-black <?= ($saldo > 0) ? 'text-red-500' : 'text-slate-400' ?>" data-label="Saldo">
+                                <span class="text-[10px] opacity-50 mr-1">Bs.</span><?= number_format($saldo, 2) ?>
                             </td>
 
-
-                            <td class="px-4 py-3 text-green-600 font-medium whitespace-nowrap" data-label="Pagado">
-                                Bs. <?= number_format($v->total_pagado, 2) ?>
+                            <td class="px-4 py-4 text-right text-emerald-600 font-bold" data-label="Pagado">
+                                <span class="text-[10px] text-emerald-300 mr-1">Bs.</span><?= number_format($v->total_pagado, 2) ?>
                             </td>
 
-
-                            <td class="px-4 py-3" data-label="Pago">
-                                <span class="px-2 py-1 rounded-full text-xs font-semibold <?= $badge_pago ?>">
+                            <td class="px-4 py-4 text-center" data-label="Pago">
+                                <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight <?= $badge_pago ?>">
                                     <?= $v->estado_pago ?>
                                 </span>
                             </td>
 
-                            <td class="px-4 py-3" data-label="Envío">
-                                <span class="px-2 py-1 rounded-full text-xs font-semibold <?= $badge_envio ?>">
+                            <td class="px-4 py-4 text-center" data-label="Envío">
+                                <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight <?= $badge_envio ?>">
                                     <?= $v->estado_envio ?>
                                 </span>
                             </td>
 
-                            <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
-                            <td class="px-4 py-3" data-label="Acciones">
-
-                                <div class="flex justify-center md:justify-center gap-2">
-
-                                    <button
-                                        class="btn-ver-detalle bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
-                                        data-id="<?= $v->id ?>">
-                                        <i class="fas fa-eye"></i> <span class="md:hidden font-bold uppercase text-[10px]">Ver Detalle</span>
+                            <td class="px-4 py-4 text-center" data-label="Acciones">
+                                <div class="flex justify-center gap-1.5">
+                                    <button class="btn-ver-detalle bg-white border border-slate-200 text-sky-500 hover:bg-sky-50 p-2 rounded-lg transition-all shadow-sm" data-id="<?= $v->id ?>" title="Ver Detalle">
+                                        <i class="fas fa-eye"></i>
                                     </button>
 
-                                    <a href="<?= base_url('ventas_bolivia/editar_venta/'.$v->id) ?>"
-                                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
-                                        <i class="fas fa-edit"></i> <span class="md:hidden font-bold uppercase text-[10px]">Editar</span>
-                                    </a>
+                                    <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                                        <a href="<?= base_url('ventas_bolivia/editar_venta/'.$v->id) ?>" class="bg-white border border-slate-200 text-amber-500 hover:bg-amber-50 p-2 rounded-lg transition-all shadow-sm" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
 
-                                    <button
-                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
-                                        onclick="abrirModalAbono(<?= $v->id ?>,'<?= $v->nombre ?>',<?= $saldo ?>)">
-                                        <i class="fas fa-money-bill-wave"></i> <span class="md:hidden font-bold uppercase text-[10px]">Abonar</span>
-                                    </button>
+                                        <button class="bg-white border border-slate-200 text-emerald-500 hover:bg-emerald-50 p-2 rounded-lg transition-all shadow-sm" onclick="abrirModalAbono(<?= $v->id ?>,'<?= $v->nombre ?>',<?= $saldo ?>)" title="Abonar">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </button>
 
-                                    <?php if ($v->estado_envio !== 'Aprobado'): ?>
-                                    <button
-                                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
-                                        onclick="cambiarEstadoEnvio(<?= $v->id ?>,'<?= $v->estado_envio ?>')">
-                                        <i class="fas fa-clipboard-check"></i> <span class="md:hidden font-bold uppercase text-[10px]">Aprobar</span>
-                                    </button>
+                                        <?php if ($v->estado_envio !== 'Aprobado'): ?>
+                                            <button class="bg-white border border-slate-200 text-indigo-500 hover:bg-indigo-50 p-2 rounded-lg transition-all shadow-sm" onclick="cambiarEstadoEnvio(<?= $v->id ?>)" title="Aprobar">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
+                                        <?php endif; ?>
                                     <?php endif; ?>
-
                                 </div>
-
                             </td>
-                            <?php endif; ?>
-
                         </tr>
-
                         <?php endforeach; ?>
-
                     </tbody>
 
                 </table>
@@ -347,22 +324,23 @@
                     </table>
                 </div>
 
-                <hr>
-
-                <h6 class="text-success font-weight-bold"><i class="fas fa-history"></i> Historial de Abonos</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped border">
-                        <thead class="bg-light">
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Método</th>
-                                <th>Nota / Referencia</th>
-                                <th class="text-right">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody id="contenido-detalle-pagos"></tbody>
-                    </table>
-                </div>
+                <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                    <hr>
+                    <h6 class="text-success font-weight-bold"><i class="fas fa-history"></i> Historial de Abonos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped border">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Método</th>
+                                    <th>Nota / Referencia</th>
+                                    <th class="text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contenido-detalle-pagos"></tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -556,16 +534,18 @@ document.addEventListener("DOMContentLoaded", function() {
                         });
                         jQuery('#contenido-detalle-prod').html(htmlProd || '<tr><td colspan="3" class="text-center">No hay productos</td></tr>');
 
-                        let htmlPagos = '';
-                        res.pagos.forEach(p => {
-                            htmlPagos += `<tr>
-                                <td>${p.fecha_pago}</td>
-                                <td><span class="badge badge-secondary">${p.metodo_pago}</span></td>
-                                <td><small>${p.nota ? p.nota : '-'}</small></td>
-                                <td class="text-success font-weight-bold text-right">Bs. ${parseFloat(p.monto).toFixed(2)}</td>
-                            </tr>`;
-                        });
-                        jQuery('#contenido-detalle-pagos').html(htmlPagos || '<tr><td colspan="4" class="text-center">No hay pagos</td></tr>');
+                        if (jQuery('#contenido-detalle-pagos').length > 0) {
+                            let htmlPagos = '';
+                            res.pagos.forEach(p => {
+                                htmlPagos += `<tr>
+                                    <td>${p.fecha_pago}</td>
+                                    <td><span class="badge badge-secondary">${p.metodo_pago}</span></td>
+                                    <td><small>${p.nota ? p.nota : '-'}</small></td>
+                                    <td class="text-success font-weight-bold text-right">Bs. ${parseFloat(p.monto).toFixed(2)}</td>
+                                </tr>`;
+                            });
+                            jQuery('#contenido-detalle-pagos').html(htmlPagos || '<tr><td colspan="4" class="text-center">No hay pagos</td></tr>');
+                        }
                     } catch (err) {
                         console.error("Error JSON:", err);
                     }

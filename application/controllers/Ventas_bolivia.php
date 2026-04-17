@@ -272,10 +272,13 @@ public function ver_detalle_ajax($id_venta) {
     $this->db->where('d.id_venta', $id_venta);
     $productos = $this->db->get()->result();
 
-    // Obtener historial de pagos
-    $this->db->where('id_venta', $id_venta);
-    $this->db->order_by('fecha_pago', 'DESC');
-    $pagos = $this->db->get('venta_pagos_bolivia')->result();
+    // Obtener historial de pagos (Solo si no es distribuidor)
+    $pagos = [];
+    if ($this->session->userdata('rol') != 'distribuidor') {
+        $this->db->where('id_venta', $id_venta);
+        $this->db->order_by('fecha_pago', 'DESC');
+        $pagos = $this->db->get('venta_pagos_bolivia')->result();
+    }
 
     echo json_encode([
         'productos' => $productos,
