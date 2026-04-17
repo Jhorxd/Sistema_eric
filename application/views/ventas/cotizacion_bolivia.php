@@ -59,9 +59,8 @@
                             </h5>
                         </div>
                         <div class="p-6 space-y-4">
-                            <?php if (isset($distribuidor_logueado)): ?>
-                                <input type="hidden" name="id_distribuidor" value="<?= $distribuidor_logueado->id ?>">
-                            <?php endif; ?>
+                            <!-- ID del Distribuidor (Se llena solo si está logueado o si el admin lo busca) -->
+                            <input type="hidden" name="id_distribuidor" id="id_distribuidor" value="<?= isset($distribuidor_logueado) ? $distribuidor_logueado->id : '' ?>">
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">NIT</label>
                                 <div class="flex gap-2">
@@ -170,10 +169,15 @@
                                                     <?php if (isset($distribuidor_logueado)): ?>
                                                         <option value="">-- Seleccione Producto --</option>
                                                         <?php 
-                                                            $nombres_unicos = array_unique(array_column($productos, 'nombre'));
-                                                            foreach($nombres_unicos as $nombre): 
+                                                            // Logic for initial load if distributor is logged in
+                                                            $nombresMap_php = [];
+                                                            foreach($productos as $p) {
+                                                                $key = trim(strtoupper($p->nombre));
+                                                                if(!isset($nombresMap_php[$key])) $nombresMap_php[$key] = trim($p->nombre);
+                                                            }
+                                                            foreach($nombresMap_php as $key => $mostrar): 
                                                         ?>
-                                                            <option value="<?= $nombre ?>"><?= $nombre ?></option>
+                                                            <option value="<?= $key ?>"><?= $mostrar ?></option>
                                                         <?php endforeach; ?>
                                                     <?php else: ?>
                                                         <option value="">-- Busque un distribuidor primero --</option>
@@ -273,79 +277,91 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    console.log("🚀 Iniciando cargador maestro...");
-
-    function cargarScript(url, callback) {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = url;
-        script.onload = callback;
-        document.head.appendChild(script);
-    }
-
-    if (typeof jQuery === 'undefined') {
-        cargarScript("https://code.jquery.com/jquery-3.6.0.min.js", function() {
-            verificarSelect2();
-        });
-    } else {
-        verificarSelect2();
-    }
-
-    function verificarSelect2() {
-        if (typeof jQuery.fn.select2 === 'undefined') {
-            cargarScript("https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js", function() {
-                initModuloVentas(jQuery);
-            });
-        } else {
-            initModuloVentas(jQuery);
-        }
-    }
-
+// --- VARIABLES GLOBALES ---
 var listaProductosGlobal = <?= isset($productos) ? json_encode($productos) : '[]' ?>;
 
-function initModuloVentas($) {
-    console.log("⚙️ Inicializando Módulo de Ventas (Cascading Selection)...");
+// --- FUNCIONES GLOBALES (ACCESIBLES DESDE EL HTML) ---
+function buscarDistribuidor() {
+    var nit = document.getElementById('nit').value;
+    if(!nit) return alert("Ingrese un NIT para buscar");
 
-    function popularNombres($select) {
-        if (!listaProductosGlobal.length) return;
-        let nombres = [...new Set(listaProductosGlobal.map(p => p.nombre))];
-        let options = '<option value="">-- Seleccione Producto --</option>';
-        nombres.forEach(n => {
-            options += `<option value="${n}">${n}</option>`;
-        });
-        $select.html(options);
-    }
+    $.post('<?= base_url("distribuidores/buscar_por_nit") ?>', {nit: nit}, function(res) {
+        if(res && res !== null) {
+            $('#id_distribuidor').val(res.id); // <--- IMPORTANTE: Guardar el ID
+            $('#nombre').val(res.nombre);
+            $('#celular').val(res.celular);
+            $('#ubicacion').val(res.destino);
+            
+            $.post('<?= base_url("distribuidores/obtener_productos_por_distribuidor") ?>', {distribuidor_id: res.id}, function(productos) {
+                listaProductosGlobal = productos;
+                actualizarDropdownsProductos();
+                $('#panel-productos').removeClass('hidden').fadeIn();
+            }, 'json');
+
+            Swal.fire({ icon: 'success', title: 'Distribuidor encontrado', text: res.nombre, timer: 1500, showConfirmButton: false });
+        } else {
+            Swal.fire({ icon: 'info', title: 'No encontrado', text: 'El distribuidor no existe.' });
+        }
+    }, 'json');
+}
+
+function popularNombres($select) {
+    if (!listaProductosGlobal || !listaProductosGlobal.length) return;
+    let nombresMap = new Map();
+    listaProductosGlobal.forEach(p => {
+        if (p.nombre) {
+            let key = p.nombre.toString().trim().toUpperCase();
+            if (!nombresMap.has(key)) nombresMap.set(key, p.nombre.toString().trim());
+        }
+    });
+    let options = '<option value="">-- Seleccione Producto --</option>';
+    nombresMap.forEach((mostrar, valor) => {
+        options += `<option value="${valor}">${mostrar}</option>`;
+    });
+    $select.html(options);
+}
+
+function actualizarDropdownsProductos() {
+    $('.select-nombre-prod').each(function() {
+        popularNombres($(this));
+    });
+}
+
+// --- INICIALIZACIÓN DE EVENTOS ---
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("🚀 Módulo de Ventas Activado");
+
+    const $ = jQuery;
 
     // Inicializar la primera fila si ya hay productos
     if (listaProductosGlobal.length > 0) {
-        popularNombres($('.select-nombre-prod'));
+        actualizarDropdownsProductos();
     }
-
-    // --- EVENTOS DE CASCADA ---
 
     // 1. Cambio de Nombre -> Cargar Tallas
     $(document).on('change', '.select-nombre-prod', function() {
         var $fila = $(this).closest('.fila-venta');
-        var nombre = $(this).val();
+        var nombreKey = $(this).val();
         var $selectTalla = $fila.find('.select-talla-prod');
         var $selectColor = $fila.find('.select-color-prod');
         var $inputID = $fila.find('.input-producto-id');
 
-        // Resetear siguientes pasos
         $selectTalla.html('<option value="">-- Talla --</option>').prop('disabled', true);
         $selectColor.html('<option value="">-- Color --</option>').prop('disabled', true);
         $inputID.val('');
         $fila.find('.input-precio').val('');
         $fila.find('.subtotal-text').text('0.00');
+        $fila.find('.stock-preview').addClass('hidden');
 
-        if (nombre) {
-            let tallas = [...new Set(listaProductosGlobal.filter(p => p.nombre === nombre).map(p => p.talla))];
+        if (nombreKey) {
+            let nUpper = nombreKey.toUpperCase();
+            let filtered = listaProductosGlobal.filter(p => p.nombre && p.nombre.toString().trim().toUpperCase() === nUpper);
+            let tallas = [...new Set(filtered.map(p => p.talla))];
+            
             let options = '<option value="">-- Talla --</option>';
-            tallas.forEach(t => {
-                options += `<option value="${t}">${t}</option>`;
-            });
+            tallas.forEach(t => { if (t) options += `<option value="${t}">${t}</option>`; });
             $selectTalla.html(options).prop('disabled', false);
         }
         calcularTotales();
@@ -354,48 +370,57 @@ function initModuloVentas($) {
     // 2. Cambio de Talla -> Cargar Colores
     $(document).on('change', '.select-talla-prod', function() {
         var $fila = $(this).closest('.fila-venta');
-        var nombre = $fila.find('.select-nombre-prod').val();
+        var nombreKey = $fila.find('.select-nombre-prod').val();
         var talla = $(this).val();
         var $selectColor = $fila.find('.select-color-prod');
         var $inputID = $fila.find('.input-producto-id');
 
-        // Resetear color e ID
         $selectColor.html('<option value="">-- Color --</option>').prop('disabled', true);
         $inputID.val('');
         $fila.find('.input-precio').val('');
         $fila.find('.subtotal-text').text('0.00');
 
-        if (talla) {
-            let colores = [...new Set(listaProductosGlobal.filter(p => p.nombre === nombre && p.talla === talla).map(p => p.color))];
+        if (nombreKey && talla) {
+            let nUpper = nombreKey.toUpperCase();
+            let tTrim = talla.toString().trim();
+            let filtered = listaProductosGlobal.filter(p => 
+                p.nombre && p.nombre.toString().trim().toUpperCase() === nUpper && 
+                p.talla && p.talla.toString().trim() === tTrim
+            );
+            let colores = [...new Set(filtered.map(p => p.color))];
+            
             let options = '<option value="">-- Color --</option>';
-            colores.forEach(c => {
-                options += `<option value="${c}">${c}</option>`;
-            });
+            colores.forEach(c => { if (c) options += `<option value="${c}">${c}</option>`; });
             $selectColor.html(options).prop('disabled', false);
         }
         calcularTotales();
     });
 
-    // 3. Cambio de Color -> Finalizar selección y cargar datos
+    // 3. Cambio de Color -> Finalizar selección
     $(document).on('change', '.select-color-prod', function() {
         var $fila = $(this).closest('.fila-venta');
-        var nombre = $fila.find('.select-nombre-prod').val();
+        var nombreKey = $fila.find('.select-nombre-prod').val();
         var talla = $fila.find('.select-talla-prod').val();
         var color = $(this).val();
         var $inputID = $fila.find('.input-producto-id');
 
-        if (color) {
-            let producto = listaProductosGlobal.find(p => p.nombre === nombre && p.talla === talla && p.color === color);
+        if (nombreKey && talla && color) {
+            let nUpper = nombreKey.toUpperCase();
+            let tTrim = talla.toString().trim();
+            let cTrim = color.toString().trim();
+
+            let producto = listaProductosGlobal.find(p => 
+                p.nombre && p.nombre.toString().trim().toUpperCase() === nUpper && 
+                p.talla && p.talla.toString().trim() === tTrim &&
+                p.color && p.color.toString().trim() === cTrim
+            );
+
             if (producto) {
                 $inputID.val(producto.id);
                 $fila.find('.input-precio').val(parseFloat(producto.precio_venta).toFixed(2));
-                // Guardamos el stock en un data attribute para validación
                 $inputID.data('stock', producto.stock);
-                
-                // Mostrar stock en la UI
                 $fila.find('.stock-val').text(producto.stock);
                 $fila.find('.stock-preview').removeClass('hidden');
-
                 actualizarSubtotalFila($fila);
             }
         } else {
@@ -407,48 +432,34 @@ function initModuloVentas($) {
         calcularTotales();
     });
 
-    // --- FUNCIÓN DE CÁLCULO MAESTRO ---
     function calcularTotales() {
         var subtotalProductos = 0;
-        $('.subtotal-text').each(function() {
-            subtotalProductos += parseFloat($(this).text()) || 0;
-        });
-
+        $('.subtotal-text').each(function() { subtotalProductos += parseFloat($(this).text()) || 0; });
         var alfredo = parseFloat($('#alfredo').val()) || 0;
         var totalGeneral = subtotalProductos - alfredo;
-
         $('#subtotal_productos_texto').text(subtotalProductos.toFixed(2));
         $('#total_final_texto').text(totalGeneral.toFixed(2));
         $('#total_final_val').val(totalGeneral.toFixed(2));
     }
 
-    $(document).on('input', '#alfredo', function() {
-        calcularTotales();
-    });
+    $(document).on('input', '#alfredo', function() { calcularTotales(); });
 
-    // --- AGREGAR PRODUCTO ---
     $(document).on('click', '#btn-add-producto', function(e) {
         e.preventDefault();
         var $tbody = $('#tabla-ventas tbody');
         var $filaMolde = $tbody.find('.fila-venta').first();
-
         var $nuevaFila = $filaMolde.clone();
-        
-        // Resetear valores en la nueva fila
         $nuevaFila.find('select').val('').prop('disabled', true);
         $nuevaFila.find('.select-nombre-prod').prop('disabled', false);
         $nuevaFila.find('input').val('');
         $nuevaFila.find('.input-cant').val(1);
         $nuevaFila.find('.subtotal-text').text('0.00');
         $nuevaFila.find('.stock-preview').addClass('hidden');
-
         $tbody.append($nuevaFila);
         popularNombres($nuevaFila.find('.select-nombre-prod'));
     });
 
-    $(document).on('input', '.input-cant, .input-precio', function() {
-        actualizarSubtotalFila($(this).closest('tr'));
-    });
+    $(document).on('input', '.input-cant, .input-precio', function() { actualizarSubtotalFila($(this).closest('tr')); });
 
     $(document).on('click', '.btn-remove-row', function() {
         if ($('.fila-venta').length > 1) {
@@ -462,59 +473,19 @@ function initModuloVentas($) {
     function actualizarSubtotalFila($fila) {
         var $inputID = $fila.find('.input-producto-id');
         var $inputCant = $fila.find('.input-cant');
-        
         var stockDisponible = parseInt($inputID.data('stock')) || 0;
         var cant = parseFloat($inputCant.val()) || 0;
         var precio = parseFloat($fila.find('.input-precio').val()) || 0;
 
         if ($inputID.val() !== "" && cant > stockDisponible) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Stock Insuficiente',
-                text: 'La cantidad se ajustó al máximo: ' + stockDisponible,
-                confirmButtonColor: '#3085d6'
-            });
+            Swal.fire({ icon: 'warning', title: 'Stock Insuficiente', text: 'La cantidad se ajustó al máximo: ' + stockDisponible });
             cant = stockDisponible; 
             $inputCant.val(cant);
         }
-
-        var subtotal = precio; // Solo precio, como estaba antes
+        var subtotal = precio; 
         $fila.find('.subtotal-text').text(subtotal.toFixed(2));
         calcularTotales();
     }
-
-    $('#formVenta').on('submit', function(e) {
-        var total = parseFloat($('#total_final_val').val()) || 0;
-        var hayErrorStock = false;
-        var hayProductoIncompleto = false;
-
-        $('.fila-venta').each(function() {
-            var id = $(this).find('.input-producto-id').val();
-            if (!id) hayProductoIncompleto = true;
-
-            var s = parseInt($(this).find('.input-producto-id').data('stock')) || 0;
-            var c = parseInt($(this).find('.input-cant').val()) || 0;
-            if (c > s) hayErrorStock = true;
-        });
-
-        if (hayProductoIncompleto) {
-            e.preventDefault();
-            Swal.fire('Error', 'Debe terminar de seleccionar el producto (Talla y Color) en todas las filas.', 'error');
-            return false;
-        }
-
-        if (total <= 0) {
-            e.preventDefault();
-            Swal.fire('Error', 'El total de la venta no puede ser 0.00', 'error');
-            return false;
-        }
-
-        if (hayErrorStock) {
-            e.preventDefault();
-            Swal.fire('Error de Stock', 'Revise las cantidades antes de continuar.', 'error');
-            return false;
-        }
-    });
 
     $(document).on('change', '#tipo_venta', function() {
         if ($(this).val() === 'ENVIO') {
@@ -525,40 +496,5 @@ function initModuloVentas($) {
             $('#destino').removeAttr('required').val('');
         }
     });
-}
 });
-function buscarDistribuidor() {
-    var nit = document.getElementById('nit').value;
-    if(!nit) return alert("Ingrese un NIT para buscar");
-
-    $.post('<?= base_url("distribuidores/buscar_por_nit") ?>', {nit: nit}, function(res) {
-        if(res && res !== null) {
-            $('#nombre').val(res.nombre);
-            $('#celular').val(res.celular);
-            $('#ubicacion').val(res.destino);
-            
-            $.post('<?= base_url("distribuidores/obtener_productos_por_distribuidor") ?>', {distribuidor_id: res.id}, function(productos) {
-                // Actualizar lista global
-                listaProductosGlobal = productos;
-
-                // Llenar todos los nombres de productos en las filas existentes
-                $('.select-nombre-prod').each(function() {
-                    let $select = $(this);
-                    let nombres = [...new Set(listaProductosGlobal.map(p => p.nombre))];
-                    let options = '<option value="">-- Seleccione Producto --</option>';
-                    nombres.forEach(n => {
-                        options += `<option value="${n}">${n}</option>`;
-                    });
-                    $select.html(options);
-                });
-                
-                $('#panel-productos').removeClass('hidden').fadeIn();
-            }, 'json');
-
-            Swal.fire({ icon: 'success', title: 'Distribuidor encontrado', text: res.nombre, timer: 1500, showConfirmButton: false });
-        } else {
-            Swal.fire({ icon: 'info', title: 'No encontrado', text: 'El distribuidor no existe.' });
-        }
-    }, 'json');
-}
 </script>

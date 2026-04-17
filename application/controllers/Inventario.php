@@ -34,7 +34,7 @@ public function kardex_peru() {
         $this->db->where('m.id_producto', $prod_id);
     }
 
-    $this->db->order_by('m.fecha_registro', 'DESC');
+    $this->db->order_by('m.id', 'DESC');
     $data['movimientos'] = $this->db->get()->result();
 
     // Lista de productos PERÚ para filtro
@@ -65,7 +65,7 @@ public function kardex_bolivia() {
     $prod_id  = $this->input->get('producto_id');
     $dist_id  = $this->input->get('distribuidor_id'); // Asegúrate que coincida con el NAME del HTML
 
-    $this->db->select('m.*, p.nombre as producto_nombre, p.codigo, d.nombre as distribuidor_nombre');
+    $this->db->select('m.*, p.nombre as producto_nombre, p.codigo, p.talla, p.color, d.nombre as distribuidor_nombre');
     $this->db->from('producto_movimientos_bolivia m');
     $this->db->join('productos_bolivia p', 'p.id = m.id_producto');
     $this->db->join('distribuidores_bolivia d', 'd.id = m.id_distribuidor', 'left');

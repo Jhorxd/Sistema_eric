@@ -45,7 +45,9 @@ class Ventas_bolivia extends CI_Controller {
             $data['productos'] = $this->db->get('productos_bolivia')->result();
             $data['distribuidor_logueado'] = $this->db->get_where('distribuidores_bolivia', ['id' => $id_dist])->row();
         } else {
-            $data['productos'] = $this->db->get('productos_bolivia')->result();
+            // SEGURIDAD: Si es admin, empezamos con lista vacía.
+            // Esto obliga a buscar un distribuidor y cargar SOLO su stock.
+            $data['productos'] = [];
         }
 
         $this->load->view('layouts/header');
@@ -137,14 +139,15 @@ public function guardar_cotizacion() {
                         'subtotal'        => ($prec * $cant) 
                     ]);
 
-                    // Registrar movimiento de salida en Kardex (Como forzamos 'Aprobado', se ejecuta siempre)
+                    // Registrar movimiento de salida en Kardex
                     $this->Inventario_model->registrar_movimiento_bolivia(
                         $id_p, 
                         $cant, 
                         'Salida', 
                         'Ventas', 
                         $id_venta, 
-                        'Venta directa aprobada (Bolivia) - Salida automática'
+                        'Venta directa aprobada (Bolivia) - Salida automática',
+                        $id_distribuidor // <--- Pasamos el ID del distribuidor explícitamente
                     );
                 }
             }

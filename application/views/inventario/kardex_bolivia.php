@@ -84,7 +84,10 @@
                     <?php if(!empty($movimientos)): ?>
                         <?php foreach($movimientos as $m): ?>
                         <tr class="hover:bg-slate-50">
-                            <td class="px-4 py-3"><?= date('d/m/Y H:i', strtotime($m->fecha_registro)) ?></td>
+                            <!-- data-order para que DataTables ordene por timestamp real -->
+                            <td class="px-4 py-3" data-order="<?= strtotime($m->fecha_registro) ?>">
+                                <?= date('d/m/Y H:i', strtotime($m->fecha_registro)) ?>
+                            </td>
                             <td>
                                 <span class="px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-bold">
                                     <?= $m->distribuidor_nombre ?? 'SISTEMA' ?>
@@ -92,6 +95,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <b><?= $m->producto_nombre ?></b><br>
+                                <span class="text-xs text-indigo-600 font-bold">Talla: <?= $m->talla ?> | Color: <?= $m->color ?></span><br>
                                 <small class="text-slate-500"><?= $m->codigo ?></small>
                             </td>
 
@@ -128,19 +132,6 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
-<script>
-    // Usar jQuery.noConflict() por si hay otras versiones chocando
-    var $j = jQuery.noConflict();
-    $j(document).ready(function() {
-        if ($j.isFunction($j.fn.select2)) {
-            $j('.select2').select2({
-                theme: 'bootstrap4'
-            });
-        } else {
-            console.error("Select2 no se ha cargado correctamente.");
-        }
-    });
-</script>
 
 <script>
     var $j = jQuery.noConflict();
@@ -150,25 +141,27 @@
         if ($j.isFunction($j.fn.select2)) {
             $j('.select2').select2({
                 theme: 'bootstrap4',
-                allowClear: true
+                allowClear: true,
+                placeholder: "-- Seleccione --"
             });
         }
 
-        // 2. Inicializar DataTables (Paginación)
+        // 2. Inicializar DataTables
         if ($j.isFunction($j.fn.DataTable)) {
             $j('#tabla-kardex').DataTable({
-                "paging": true,          // Habilita paginación
-                "lengthChange": true,    // Permite cambiar de 10 a 25, 50, etc.
-                "searching": false,       // Buscador interno rápido
-                "ordering": true,        // Permite ordenar columnas
-                "info": true,            // Muestra "Mostrando 1 de 10..."
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
                 "autoWidth": false,
                 "responsive": true,
-                "pageLength": 10,        // Mostrar 10 por página por defecto
+                "pageLength": 25,
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducción al español
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
                 },
-                "order": [[0, "desc"]]   // Ordenar por fecha (primera columna) de más reciente a antiguo
+                // Forzamos el orden por la columna 0 (Fecha) usando el data-order
+                "order": [[0, "desc"]]
             });
         }
     });
