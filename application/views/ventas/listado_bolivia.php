@@ -13,6 +13,127 @@
         width: 80% !important;
         display: block !important;
     }
+
+    /* Estilos Responsivos para Listado de Ventas - Versión Completa y Organizada */
+    @media (max-width: 1024px) {
+        #tabla-listado-ventas thead { display: none; }
+        #tabla-listado-ventas, #tabla-listado-ventas tbody, #tabla-listado-ventas tr, #tabla-listado-ventas td { display: block; width: 100%; border: none; }
+        
+        #tabla-listado-ventas tr { 
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 1.5rem; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1.5rem; 
+            padding: 1.25rem; 
+            background: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        #tabla-listado-ventas td { 
+            padding: 0.75rem 0; 
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* --- SECCIÓN 1: CABECERA (ID, FECHA, ESTADOS) --- */
+        #tabla-listado-ventas td[data-label="ID / Fecha"] {
+            border-bottom: 2px solid #6366f1;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #tabla-listado-ventas td[data-label="ID / Fecha"]::before { content: "ORDEN "; font-size: 0.75rem; color: #6366f1; font-weight: 900; }
+        
+        #tabla-listado-ventas td[data-label="Pago"],
+        #tabla-listado-ventas td[data-label="Envío"] {
+            display: inline-flex;
+            width: auto;
+            border: none;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+        #tabla-listado-ventas td[data-label="Pago"] { margin-right: 0.5rem; }
+        #tabla-listado-ventas td[data-label="Pago"]::before { content: "PAGO: "; font-size: 0.55rem; font-weight: 800; margin-right: 4px; color: #94a3b8; }
+        #tabla-listado-ventas td[data-label="Envío"]::before { content: "ENVÍO: "; font-size: 0.55rem; font-weight: 800; margin-right: 4px; color: #94a3b8; }
+
+        /* --- SECCIÓN 2: CLIENTE Y PRODUCTO --- */
+        #tabla-listado-ventas td[data-label="Distribuidor"],
+        #tabla-listado-ventas td[data-label="Celular"],
+        #tabla-listado-ventas td[data-label="Tipo"] {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        #tabla-listado-ventas td[data-label="Distribuidor"] .flex { justify-content: flex-end !important; }
+        #tabla-listado-ventas td[data-label="Tipo"]::before { content: "MÉTODO"; }
+
+        /* --- SECCIÓN 3: RESUMEN FINANCIERO CORREGIDO --- */
+        /* Hacemos que los 4 montos se vean juntos en un bloque gris */
+        #tabla-listado-ventas td[data-label="Total Venta"],
+        #tabla-listado-ventas td[data-label="Saldo"],
+        #tabla-listado-ventas td[data-label="Pagado"],
+        #tabla-listado-ventas td[data-label="Comisión"] {
+            display: inline-flex;
+            width: 48%; /* Dos por fila */
+            flex-direction: column;
+            align-items: flex-start;
+            background: #f8fafc;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            border: 1px solid #edf2f7;
+            border-radius: 0.5rem;
+        }
+        #tabla-listado-ventas td[data-label="Total Venta"], 
+        #tabla-listado-ventas td[data-label="Pagado"] { margin-right: 4%; }
+        
+        #tabla-listado-ventas td[data-label="Total Venta"]::before { content: "TOTAL"; color: #1e293b; }
+        #tabla-listado-ventas td[data-label="Saldo"]::before { content: "SALDO"; color: #ef4444; }
+        #tabla-listado-ventas td[data-label="Pagado"]::before { content: "PAGADO"; color: #22c55e; }
+        #tabla-listado-ventas td[data-label="Comisión"]::before { content: "COMISIÓN"; }
+
+        /* --- SECCIÓN 4: ACCIONES --- */
+        #tabla-listado-ventas td[data-label="Acciones"] {
+            border: none;
+            padding-top: 1.25rem;
+            margin-top: 0.5rem;
+        }
+        #tabla-listado-ventas td[data-label="Acciones"]::before { display: none; }
+        #tabla-listado-ventas td[data-label="Acciones"] .flex {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            width: 100%;
+        }
+        #tabla-listado-ventas td[data-label="Acciones"] button, 
+        #tabla-listado-ventas td[data-label="Acciones"] a { 
+            width: 100%;
+            padding: 0.85rem 0.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        #tabla-listado-ventas td[data-label="Acciones"] span { display: inline; }
+
+        /* Etiquetas Genéricas */
+        #tabla-listado-ventas td::before {
+            content: attr(data-label);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+    }
 </style>
 
 <div class="md:ml-64 min-h-screen bg-slate-50 pt-20">
@@ -27,9 +148,9 @@
             </h1>
 
             <a href="<?= base_url('ventas_bolivia/nueva_cotizacion') ?>"
-               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg shadow text-sm md:text-base">
+               class="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 md:px-5 md:py-2.5 rounded-xl shadow-lg shadow-blue-100 text-sm md:text-base font-bold transition-all">
                 <i class="fas fa-plus"></i>
-                Nueva Venta
+                NUEVA VENTA
             </a>
 
         </div>
@@ -58,7 +179,9 @@
                             <th class="px-4 py-3">Pagado</th>
                             <th class="px-4 py-3">Estado Pago</th>
                             <th class="px-4 py-3">Estado Envío</th>
-                            <th class="px-4 py-3 text-center">Acciones</th>
+                            <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                                <th class="px-4 py-3 text-center">Acciones</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
 
@@ -83,7 +206,7 @@
 
                         ?>
 
-                        <td class="px-4 py-3" data-order="<?= strtotime($v->fecha) ?>">
+                        <td class="px-4 py-3" data-order="<?= strtotime($v->fecha) ?>" data-label="ID / Fecha">
                             <strong>#<?= $v->id ?></strong><br>
                             <small class="text-slate-500">
                                 <?= date('d/m/Y H:i', strtotime($v->fecha)) ?>
@@ -91,12 +214,12 @@
                         </td>
 
                         <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                            <td class="px-4 py-3 whitespace-nowrap" data-label="Distribuidor">
+                                <div class="flex items-center gap-3 justify-end md:justify-start">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs order-2 md:order-1">
                                         <?= substr($v->nombre ?? 'D', 0, 1) ?>
                                     </div>
-                                    <div class="flex flex-col">
+                                    <div class="flex flex-col order-1 md:order-2 text-right md:text-left">
                                         <span class="font-semibold text-slate-700 leading-none"><?= $v->nombre ?></span>
                                         <small class="text-slate-500 italic mt-0.5">Bolivia</small>
                                     </div>
@@ -104,7 +227,7 @@
                             </td>
                         <?php endif; ?>
 
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-4 py-3 text-center" data-label="Tipo">
                                 <?php if($v->tipo_venta == 'ENVIO'): ?>
                                     <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold">ENVIO</span>
                                 <?php else: ?>
@@ -112,7 +235,7 @@
                                 <?php endif; ?>
                             </td>
 
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3" data-label="Celular">
                                 <div class="font-semibold text-slate-800">
                                     <?= $v->celular_cliente ?>
                                 </div>
@@ -121,68 +244,70 @@
                                 <?php endif; ?>
                             </td>
 
-                            <td class="px-4 py-3 whitespace-nowrap">
+                            <td class="px-4 py-3 whitespace-nowrap" data-label="Total Venta">
                                 Bs. <?= number_format($v->total_venta, 2) ?>
                             </td>
 
-                            <td class="px-4 py-3 whitespace-nowrap">
+                            <td class="px-4 py-3 whitespace-nowrap" data-label="Comisión">
                                 Bs. <?= number_format($v->comision_delivery, 2) ?>
                             </td>
 
-                            <td class="px-4 py-3 font-bold <?= ($saldo > 0) ? 'text-red-600' : 'text-gray-500' ?>">
+                            <td class="px-4 py-3 font-bold <?= ($saldo > 0) ? 'text-red-600' : 'text-gray-500' ?>" data-label="Saldo">
                                 Bs. <?= number_format($saldo, 2) ?>
                             </td>
 
 
-                            <td class="px-4 py-3 text-green-600 font-medium whitespace-nowrap">
+                            <td class="px-4 py-3 text-green-600 font-medium whitespace-nowrap" data-label="Pagado">
                                 Bs. <?= number_format($v->total_pagado, 2) ?>
                             </td>
 
 
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3" data-label="Pago">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold <?= $badge_pago ?>">
                                     <?= $v->estado_pago ?>
                                 </span>
                             </td>
 
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3" data-label="Envío">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold <?= $badge_envio ?>">
                                     <?= $v->estado_envio ?>
                                 </span>
                             </td>
 
-                            <td class="px-4 py-3">
+                            <?php if ($this->session->userdata('rol') != 'distribuidor'): ?>
+                            <td class="px-4 py-3" data-label="Acciones">
 
-                                <div class="flex justify-center gap-2">
+                                <div class="flex justify-center md:justify-center gap-2">
 
                                     <button
-                                        class="btn-ver-detalle bg-sky-500 hover:bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
+                                        class="btn-ver-detalle bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
                                         data-id="<?= $v->id ?>">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="fas fa-eye"></i> <span class="md:hidden font-bold uppercase text-[10px]">Ver Detalle</span>
                                     </button>
 
                                     <a href="<?= base_url('ventas_bolivia/editar_venta/'.$v->id) ?>"
-                                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded text-sm">
-                                        <i class="fas fa-edit"></i>
+                                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
+                                        <i class="fas fa-edit"></i> <span class="md:hidden font-bold uppercase text-[10px]">Editar</span>
                                     </a>
 
                                     <button
-                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-sm"
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
                                         onclick="abrirModalAbono(<?= $v->id ?>,'<?= $v->nombre ?>',<?= $saldo ?>)">
-                                        <i class="fas fa-money-bill-wave"></i>
+                                        <i class="fas fa-money-bill-wave"></i> <span class="md:hidden font-bold uppercase text-[10px]">Abonar</span>
                                     </button>
 
                                     <?php if ($v->estado_envio !== 'Aprobado'): ?>
                                     <button
-                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm"
+                                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-3 md:py-1.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
                                         onclick="cambiarEstadoEnvio(<?= $v->id ?>,'<?= $v->estado_envio ?>')">
-                                        <i class="fas fa-clipboard-check"></i>
+                                        <i class="fas fa-clipboard-check"></i> <span class="md:hidden font-bold uppercase text-[10px]">Aprobar</span>
                                     </button>
                                     <?php endif; ?>
 
                                 </div>
 
                             </td>
+                            <?php endif; ?>
 
                         </tr>
 

@@ -3,6 +3,38 @@
     .total-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
     .table thead th { background-color: #343a40; color: white; border: none; }
     .btn-remove-row { margin-top: 5px; }
+
+    /* Estilos Responsivos para Tabla de Productos */
+    @media (max-width: 768px) {
+        #tabla-ventas thead { display: none; }
+        #tabla-ventas, #tabla-ventas tbody, #tabla-ventas tr, #tabla-ventas td { display: block; width: 100%; }
+        #tabla-ventas tr { 
+            margin-bottom: 1.5rem; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1rem; 
+            padding: 1rem; 
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        #tabla-ventas td { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0.75rem 0; 
+            border-bottom: 1px solid #f1f5f9;
+        }
+        #tabla-ventas td:last-child { border-bottom: none; }
+        #tabla-ventas td::before {
+            content: attr(data-label);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+        .select2-container { width: 100% !important; }
+        .input-cant, .input-precio { width: 120px !important; text-align: right; }
+    }
 </style>
 
 
@@ -106,14 +138,14 @@
 
                 <div id="panel-productos" class="xl:col-span-8 space-y-6 <?= isset($distribuidor_logueado) ? '' : 'hidden' ?>">
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div class="px-8 py-6 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
+                        <div class="px-4 sm:px-8 py-4 sm:py-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <h3 class="font-black text-slate-800 text-lg flex items-center gap-3 italic">
                                 <i class="fas fa-shopping-basket text-slate-400 font-normal"></i> Productos en Pedido
                             </h3>
-                            <div class="flex items-center gap-4">
-                                <input type="datetime-local" name="fecha" class="text-sm font-bold bg-slate-100 border-none rounded-lg px-3 py-1.5" value="<?= date('Y-m-d\TH:i') ?>">
-                                <button type="button" id="btn-add-producto" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-100">
-                                    <i class="fas fa-plus mr-1"></i> Agregar
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                                <input type="datetime-local" name="fecha" class="text-xs sm:text-sm font-bold bg-slate-100 border-none rounded-lg px-3 py-2" value="<?= date('Y-m-d\TH:i') ?>">
+                                <button type="button" id="btn-add-producto" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-lg shadow-emerald-100 flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus"></i> AGREGAR PRODUCTO
                                 </button>
                             </div>
                         </div>
@@ -131,7 +163,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-50">
                                     <tr class="fila-venta">
-                                        <td class="px-8 py-5">
+                                        <td class="px-8 py-5" data-label="Producto">
                                             <select name="producto_id[]" id="primer-select-prod" class="w-full bg-transparent border-b-2 border-slate-100 py-2 focus:border-indigo-500 outline-none text-sm font-semibold select-prod" required>
                                                 <?php if (isset($distribuidor_logueado)): ?>
                                                     <option value="">-- Seleccione Producto --</option>
@@ -145,20 +177,23 @@
                                                 <?php endif; ?>
                                             </select>
                                         </td>
-                                        <td class="px-4 py-5">
+                                        <td class="px-4 py-5" data-label="Cantidad">
                                             <input type="number" name="cant[]" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-center font-bold input-cant" value="1" min="1">
                                         </td>
-                                        <td class="px-4 py-5 text-right">
+                                        <td class="px-4 py-5 text-right" data-label="Precio Unit.">
                                             <div class="flex items-center justify-end">
                                                 <span class="text-slate-400 font-bold mr-1 text-xs">Bs.</span>
                                                 <input type="number" name="precio[]" class="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-right font-bold input-precio" step="0.01">
                                             </div>
                                         </td>
-                                        <td class="px-4 py-5 text-right font-mono font-black text-slate-900">
+                                        <td class="px-4 py-5 text-right font-mono font-black text-slate-900" data-label="Subtotal">
                                             Bs. <span class="subtotal-text text-lg">0.00</span>
                                         </td>
-                                        <td class="px-8 py-5 text-center">
-                                            <button type="button" class="text-slate-300 hover:text-red-500 btn-remove-row"><i class="fas fa-times-circle text-lg"></i></button>
+                                        <td class="px-8 py-5 text-center" data-label="Acción">
+                                            <button type="button" class="text-slate-400 hover:text-red-500 btn-remove-row flex items-center gap-2">
+                                                <i class="fas fa-times-circle text-lg"></i>
+                                                <span class="md:hidden text-xs font-bold uppercase">Quitar</span>
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -189,9 +224,9 @@
                                     </div>
                                 </div>
                                 
-                                <div class="text-right border-t lg:border-t-0 lg:border-l border-slate-800 pt-6 lg:pt-0 lg:pl-8">
+                                <div class="text-center lg:text-right border-t lg:border-t-0 lg:border-l border-slate-800 pt-6 lg:pt-0 lg:pl-8">
                                     <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-1">Total General</p>
-                                    <h3 class="text-5xl font-black text-white italic tracking-tighter">Bs. <span id="total_final_texto">0.00</span></h3>
+                                    <h3 class="text-4xl sm:text-5xl font-black text-white italic tracking-tighter">Bs. <span id="total_final_texto">0.00</span></h3>
                                     <input type="hidden" name="total_final" id="total_final_val">
                                 </div>
                             </div>
