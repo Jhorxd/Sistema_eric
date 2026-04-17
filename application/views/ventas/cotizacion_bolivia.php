@@ -104,7 +104,7 @@
                     </div>
                 </div>
 
-                <div id="panel-productos" class="xl:col-span-8 space-y-6 <?= isset($distribuidor_logueado) ? '' : 'hidden' ?>">den">
+                <div id="panel-productos" class="xl:col-span-8 space-y-6 <?= isset($distribuidor_logueado) ? '' : 'hidden' ?>">
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="px-8 py-6 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
                             <h3 class="font-black text-slate-800 text-lg flex items-center gap-3 italic">
