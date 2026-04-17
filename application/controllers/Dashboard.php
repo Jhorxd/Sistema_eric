@@ -23,14 +23,21 @@ class Dashboard extends CI_Controller {
         $f_nombre_prod = $this->input->get('producto_nombre');
 
         $data = array();
-        $data['distribuidores'] = $this->db->get('distribuidores_bolivia')->result();
         
-        // Cargar nombres únicos de productos
-        $this->db->select('DISTINCT(nombre) as nombre');
-        if ($id_dist && $id_dist != 'alfredo') {
-            $this->db->where('id_distribuidor', $id_dist);
+        // Carga de datos específicos por país para filtros
+        if ($pais == 'bolivia') {
+            $data['distribuidores'] = $this->db->get('distribuidores_bolivia')->result();
+            
+            // Cargar nombres únicos de productos
+            $this->db->select('DISTINCT(nombre) as nombre');
+            if ($id_dist && $id_dist != 'alfredo') {
+                $this->db->where('id_distribuidor', $id_dist);
+            }
+            $data['lista_productos_nombres'] = $this->db->get('productos_bolivia')->result();
+        } else {
+            $data['distribuidores'] = []; // Perú no usa distribuidores en dashboard por ahora
+            $data['lista_productos_nombres'] = $this->db->select('DISTINCT(nombre) as nombre')->get('productos_peru')->result();
         }
-        $data['lista_productos_nombres'] = $this->db->get('productos_bolivia')->result();
         
         $data['f_inicio'] = $f_inicio;
         $data['f_fin']    = $f_fin;
@@ -169,4 +176,43 @@ class Dashboard extends CI_Controller {
             'total_items'            => count($productos_distribuidor)
         ];
     }
-}
+
+    // --- LÓGICA DE DATOS PARA PERÚ ---
+    private function _get_data_peru($inicio, $fin) {
+        // 1. Ventas del periodo
+        $this->db->select_sum('total_venta');
+        $this->db->where('fecha >=', $inicio);
+        $this->db->where('fecha <=', $fin . ' 23:59:59');
+        $ventas = $this->db->get('ventas_peru')->row();
+
+        // 2. Saldos por cobrar (Ventas no pagadas totalmente)
+        $this->db->select_sum('total_venta');
+        $this->db->select_sum('total_pagado');
+        $this->db->where('total_pagado < total_venta');
+        $saldos_q = $this->db->get('ventas_peru')->row();
+        $total_saldos = ($saldos_q->total_venta ?? 0) - ($saldos_q->total_pagado ?? 0);
+
+        // 3. Stock Crítico
+        $this->db->where('stock <', 5);
+        $stock = $this->db->count_all_results('productos_peru');
+
+        // 4. Últimos Movimientos
+        $this->db->select('k.*, p.nombre as producto_nombre');
+        $this->db->from('producto_movimientos_peru k');
+        $this->db->join('productos_peru p', 'k.id_producto = p.id');
+        $this->db->order_by('k.id', 'DESC');
+        $this->db->limit(10);
+        $movimientos = $this->db->get()->result();
+
+        // 5. Total ítems (SKU)
+        $total_items = $this->db->count_all('productos_peru');
+
+        return [
+            'total_ventas_mes'       => $ventas->total_venta ?? 0,
+            'total_saldos'           => $total_saldos,
+            'productos_bajo_stock'   => $stock,
+            'ultimos_movimientos'    => $movimientos,
+            'total_items'            => $total_items
+        ];
+    }
+}
