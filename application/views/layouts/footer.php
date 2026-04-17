@@ -4,14 +4,15 @@
 
 </div>
 
-<script src="<?= base_url() ?>plugins/jquery/jquery.min.js"></script>
-<script src="<?= base_url() ?>plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="<?= base_url() ?>dist/js/adminlte.min.js"></script>
 
 </body>
 </html>
 <script>
-document.querySelector('.sidebar-toggle')?.addEventListener('click', function() {
-    document.body.classList.toggle('sidebar-open');
+$(document).ready(function() {
+    // Sidebar Toggle Manual
+    $('.sidebar-toggle').on('click', function() {
+        $('body').toggleClass('sidebar-open');
+    });
 });
 </script>

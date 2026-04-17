@@ -131,33 +131,33 @@
                         </h3>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table id="tabla-alfredo-bolivia" class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
-                                    <th class="px-8 py-4 font-bold">Fecha</th>
-                                    <th class="px-8 py-4 font-bold">Cliente / Detalle</th>
-                                    <th class="px-8 py-4 font-bold text-center">Estado</th>
-                                    <th class="px-8 py-4 font-bold text-right">Monto</th>
-                                    <th class="px-8 py-4 font-bold text-right">Pagado</th>
-                                    <th class="px-8 py-4 font-bold text-right">Saldo</th>
+                                    <th class="px-4 py-4 font-bold">Fecha</th>
+                                    <th class="px-4 py-4 font-bold">Cliente / Detalle</th>
+                                    <th class="px-4 py-4 font-bold text-center">Estado</th>
+                                    <th class="px-4 py-4 font-bold text-right">Monto</th>
+                                    <th class="px-4 py-4 font-bold text-right">Pagado</th>
+                                    <th class="px-4 py-4 font-bold text-right">Saldo</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 <?php if(!empty($pedidos_alfredo)): foreach($pedidos_alfredo as $pa): ?>
                                     <tr class="hover:bg-amber-50/30 transition-all duration-200">
-                                        <td class="px-8 py-4 text-[10px] font-bold text-slate-400"><?= date('d/m/Y', strtotime($pa->fecha_registro)) ?></td>
-                                        <td class="px-8 py-4">
+                                        <td class="px-4 py-4 text-[10px] font-bold text-slate-400"><?= date('d/m/Y', strtotime($pa->fecha_registro)) ?></td>
+                                        <td class="px-4 py-4">
                                             <div class="font-black text-slate-700 uppercase leading-tight"><?= $pa->cliente ?></div>
                                             <div class="text-[10px] text-slate-400 italic">Venta #<?= $pa->id_venta ?></div>
                                         </td>
-                                        <td class="px-8 py-4 text-center">
+                                        <td class="px-4 py-4 text-center">
                                             <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter bg-blue-100 text-blue-700">
                                                 <?= $pa->estado ?>
                                             </span>
                                         </td>
-                                        <td class="px-8 py-4 text-right font-bold text-slate-600">Bs. <?= number_format($pa->monto_alfredo, 2) ?></td>
-                                        <td class="px-8 py-4 text-right font-bold text-emerald-600">Bs. <?= number_format($pa->pagado, 2) ?></td>
-                                        <td class="px-8 py-4 text-right font-black text-red-600">Bs. <?= number_format($pa->saldo, 2) ?></td>
+                                        <td class="px-4 py-4 text-right font-bold text-slate-600">Bs. <?= number_format($pa->monto_alfredo, 2) ?></td>
+                                        <td class="px-4 py-4 text-right font-bold text-emerald-600">Bs. <?= number_format($pa->pagado, 2) ?></td>
+                                        <td class="px-4 py-4 text-right font-black text-red-600">Bs. <?= number_format($pa->saldo, 2) ?></td>
                                     </tr>
                                 <?php endforeach; else: ?>
                                     <tr><td colspan="6" class="px-8 py-20 text-center text-slate-400 italic font-medium">No hay cobros pendientes para Alfredo.</td></tr>
@@ -178,14 +178,14 @@
                         </h3>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table id="tabla-stock-bolivia" class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
-                                    <th class="px-8 py-4 font-bold">Producto</th>
-                                    <th class="px-8 py-4 font-bold text-center">Talla</th>
-                                    <th class="px-8 py-4 font-bold text-center">Color</th>
-                                    <th class="px-8 py-4 font-bold text-right">Stock Actual</th>
-                                    <th class="px-8 py-4 font-bold text-right">Precio</th>
+                                    <th class="px-4 py-4 font-bold">Producto</th>
+                                    <th class="px-4 py-4 font-bold text-center">Talla</th>
+                                    <th class="px-4 py-4 font-bold text-center">Color</th>
+                                    <th class="px-4 py-4 font-bold text-right">Stock Actual</th>
+                                    <th class="px-4 py-4 font-bold text-right">Precio</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -204,20 +204,20 @@
                                     $bg_color = isset($color_map[$color_key]) ? $color_map[$color_key] : '#CBD5E1';
                                 ?>
                                 <tr class="hover:bg-slate-50 transition-all duration-200">
-                                    <td class="px-8 py-4 font-bold text-slate-700 uppercase"><?= $pd->nombre ?></td>
-                                    <td class="px-8 py-4 text-center">
+                                    <td class="px-4 py-4 font-bold text-slate-700 uppercase"><?= $pd->nombre ?></td>
+                                    <td class="px-4 py-4 text-center">
                                         <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-black"><?= $pd->talla ?></span>
                                     </td>
-                                    <td class="px-8 py-4 text-center">
+                                    <td class="px-4 py-4 text-center">
                                         <div class="flex items-center justify-center gap-2">
                                             <span class="inline-block w-4 h-4 rounded-full border border-slate-200 shadow-sm" style="background-color: <?= $bg_color ?>;"></span>
                                             <span class="text-xs font-bold text-slate-500 uppercase"><?= $pd->color ?></span>
                                         </div>
                                     </td>
-                                    <td class="px-8 py-4 text-right">
+                                    <td class="px-4 py-4 text-right">
                                         <span class="text-sm font-black <?= ($pd->stock < 5) ? 'text-red-500' : 'text-slate-900' ?>"><?= $pd->stock ?></span>
                                     </td>
-                                    <td class="px-8 py-4 text-right font-bold text-slate-400 text-xs">Bs. <?= number_format($pd->precio_venta, 2) ?></td>
+                                    <td class="px-4 py-4 text-right font-bold text-slate-400 text-xs">Bs. <?= number_format($pd->precio_venta, 2) ?></td>
                                 </tr>
                                 <?php endforeach; else: ?>
                                     <tr><td colspan="5" class="px-8 py-20 text-center text-slate-400 italic font-medium">No hay productos registrados para este filtro.</td></tr>
@@ -228,7 +228,8 @@
                 </div>
                 <?php endif; ?>
 
-                <!-- ULTIMOS MOVIMIENTOS -->
+                <!-- SECCIÓN MOVIMIENTOS OCULTA POR SOLICITUD -->
+                <?php if(false): ?>
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="px-8 py-6 border-b border-slate-100 bg-white flex justify-between items-center">
                         <h3 class="font-black text-slate-800 flex items-center gap-3 text-lg text-uppercase">
@@ -238,32 +239,32 @@
                     </div>
                     
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table id="tabla-movimientos-bolivia" class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
-                                    <th class="px-8 py-4 font-bold">Fecha</th>
-                                    <th class="px-8 py-4 font-bold">Producto</th>
-                                    <th class="px-8 py-4 font-bold text-center">Tipo</th>
-                                    <th class="px-8 py-4 font-bold text-right">Cant.</th>
-                                    <th class="px-8 py-4 font-bold text-right">Stock Final</th>
+                                    <th class="px-4 py-4 font-bold">Fecha</th>
+                                    <th class="px-4 py-4 font-bold">Producto</th>
+                                    <th class="px-4 py-4 font-bold text-center">Tipo</th>
+                                    <th class="px-4 py-4 font-bold text-right">Cant.</th>
+                                    <th class="px-4 py-4 font-bold text-right">Stock Final</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 <?php if(!empty($ultimos_movimientos)): foreach($ultimos_movimientos as $m): ?>
                                 <tr class="hover:bg-slate-50 transition-all duration-200 group">
-                                    <td class="px-8 py-5 text-[11px] text-slate-400 font-bold">
+                                    <td class="px-4 py-5 text-[11px] text-slate-400 font-bold">
                                         <?= date('d/m/Y H:i', strtotime($m->fecha_registro)) ?>
                                     </td>
-                                    <td class="px-8 py-5">
+                                    <td class="px-4 py-5">
                                         <div class="font-bold text-slate-700 text-sm group-hover:text-amber-600 transition-colors uppercase"><?= $m->producto_nombre ?></div>
                                     </td>
-                                    <td class="px-8 py-5 text-center">
+                                    <td class="px-4 py-5 text-center">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter <?= ($m->tipo_movimiento == 'Entrada') ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' ?>">
                                             <?= $m->tipo_movimiento ?>
                                         </span>
                                     </td>
-                                    <td class="px-8 py-5 text-right font-mono text-slate-500 font-bold text-xs"><?= number_format($m->cantidad, 0) ?></td>
-                                    <td class="px-8 py-5 text-right font-black text-slate-900"><?= number_format($m->stock_actual, 0) ?></td>
+                                    <td class="px-4 py-5 text-right font-mono text-slate-500 font-bold text-xs"><?= number_format($m->cantidad, 0) ?></td>
+                                    <td class="px-4 py-5 text-right font-black text-slate-900"><?= number_format($m->stock_actual, 0) ?></td>
                                 </tr>
                                 <?php endforeach; else: ?>
                                 <tr>
@@ -274,6 +275,7 @@
                         </table>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
 
             <!-- SIDEBAR ACTIONS -->
@@ -311,4 +313,71 @@
     </div>
 </div>
 
-<?php $this->load->view('layouts/footer'); ?>
+<style>
+    /* Estilos personalizados para DataTables en el Dashboard */
+    /* Compactar filas y columnas para evitar scroll horizontal */
+    #tabla-stock-bolivia td, #tabla-movimientos-bolivia td, #tabla-alfredo-bolivia td,
+    #tabla-stock-bolivia th, #tabla-movimientos-bolivia th, #tabla-alfredo-bolivia th { 
+        padding-left: 1rem !important; 
+        padding-right: 1rem !important; 
+        padding-top: 0.6rem !important; 
+        padding-bottom: 0.6rem !important;
+        white-space: nowrap;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate { 
+        width: 100%; 
+        display: flex !important; 
+        justify-content: center !important; 
+        margin-top: 1.5rem !important; 
+        margin-bottom: 1.5rem !important;
+        float: none !important;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button { 
+        border-radius: 10px !important; 
+        margin: 0 3px !important; 
+        border: 1px solid #f1f5f9 !important;
+        background: #f8fafc !important;
+        color: #64748b !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        padding: 0.5rem 1rem !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #0f172a !important;
+        color: white !important;
+        border-color: #0f172a !important;
+    }
+
+    table.dataTable { width: 100% !important; margin: 0 !important; border-collapse: collapse !important; }
+</style>
+
+<script>
+    $(document).ready(function() {
+        const configDT = {
+            "paging": true,
+            "lengthChange": false,
+            "searching": false, // <--- OCULTAR BUSCADOR
+            "ordering": true,
+            "info": false,      // <--- OCULTAR "SHOWING X TO Y..."
+            "autoWidth": false,
+            "responsive": false,
+            "pageLength": 8,
+            "dom": 'rtp',       // <--- SOLO TABLA Y PAGINACIÓN
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        };
+
+        if ($.fn.DataTable) {
+            $('#tabla-alfredo-bolivia').DataTable(configDT);
+            $('#tabla-stock-bolivia').DataTable(configDT);
+            $('#tabla-movimientos-bolivia').DataTable(configDT);
+        }
+    });
+</script>
+
+<?php $this->load->view('layouts/footer'); ?>

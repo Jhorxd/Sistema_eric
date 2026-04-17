@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sistema Inventario</title>
 
+    <!-- 1. jQuery Principal (DEBE IR PRIMERO) -->
+    <script src="<?= base_url() ?>plugins/jquery/jquery.min.js"></script>
+    <script src="<?= base_url() ?>plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 2. DataTables & Plugins (BS4) -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="<?= base_url() ?>plugins/fontawesome-free/css/all.min.css">
     
@@ -21,17 +30,29 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         /* Tailwind config para AdminLTE */
         * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
         .sidebar-dark-primary .nav-link { transition: all 0.3s ease; }
+
+        /* ENTRADA SUAVE SIN PANTALLA EN BLANCO */
+        body { background-color: #f8fafc; } /* Slate-50 instantáneo */
+        
+        .fade-in-content {
+            animation: fadeInPage 0.2s ease-out forwards;
+        }
+
+        @keyframes fadeInPage {
+            from { opacity: 0.8; filter: blur(4px); transform: scale(0.995); }
+            to { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
     </style>
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed fade-in-content">
+
 <!-- Site wrapper -->
 <div class="wrapper">
 
