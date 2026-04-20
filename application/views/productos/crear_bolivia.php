@@ -45,7 +45,7 @@
                         <select name="talla" class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200">
                             <option value="">Seleccionar Talla</option>
                             <?php 
-                                $tallas = ['S', 'M', 'L', 'XL', 'XXL', 'Estándar'];
+                                $tallas = ['Grande', 'Pequeño'];
                                 foreach($tallas as $t): 
                                     $selected = (isset($producto) && $producto->talla == $t) ? 'selected' : '';
                             ?>

@@ -19,7 +19,7 @@
                         <label class="absolute -top-2 left-4 bg-white px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest z-10 group-focus-within:text-blue-500 transition-colors">Distribuidor</label>
                         <select name="distribuidor" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer text-slate-700">
                             <option value="">-- Todos --</option>
-                            <option value="alfredo" <?= ($f_dist == 'alfredo') ? 'selected' : '' ?>>👤 ALFREDO (Cobros)</option>
+                            <option value="alfredo" <?= ($f_dist == 'alfredo') ? 'selected' : '' ?>>&#128100; ALFREDO (Cobros)</option>
                             <?php foreach($distribuidores as $d): ?>
                                 <option value="<?= $d->id ?>" <?= ($f_dist == $d->id) ? 'selected' : '' ?>><?= $d->nombre ?></option>
                             <?php endforeach; ?>
@@ -112,7 +112,7 @@
                     </div>
                     <span class="text-[10px] font-black text-red-400 uppercase tracking-widest">Alertas</span>
                 </div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">Stock Crítico</p>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-1">Stock Cr&iacute;tico</p>
                 <h3 class="text-2xl font-black text-slate-900"><?= $productos_bajo_stock ?? 0 ?> <span class="text-xs text-slate-400 font-bold">Unid.</span></h3>
             </div>
         </div>
@@ -159,14 +159,44 @@
                                         <td class="px-4 py-4 text-right font-bold text-emerald-600">Bs. <?= number_format($pa->pagado, 2) ?></td>
                                         <td class="px-4 py-4 text-right font-black text-red-600">Bs. <?= number_format($pa->saldo, 2) ?></td>
                                     </tr>
-                                <?php endforeach; else: ?>
-                                    <tr><td colspan="6" class="px-8 py-20 text-center text-slate-400 italic font-medium">No hay cobros pendientes para Alfredo.</td></tr>
-                                <?php endif; ?>
+                                <?php endforeach; endif; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <?php endif; ?>
+
+                <!-- TABLA DE RANKING DE VENTAS POR MODELO (NUEVA SECCIÓN) -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-8 py-6 border-b border-slate-100 bg-white">
+                        <h3 class="font-black text-slate-800 flex items-center gap-3 text-lg text-uppercase">
+                            <span class="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                            &#128202; Ranking de Ventas por Modelo
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="tabla-ranking-bolivia" class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
+                                    <th class="px-4 py-4 font-bold">Producto (Modelo)</th>
+                                    <th class="px-4 py-4 font-bold text-right">Total Vendido (Unid.)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <?php if(!empty($ventas_por_modelo)): foreach($ventas_por_modelo as $vm): ?>
+                                    <tr class="hover:bg-slate-50 transition-all duration-200">
+                                        <td class="px-4 py-4 font-bold text-slate-700 uppercase"><?= $vm->nombre ?></td>
+                                        <td class="px-4 py-4 text-right">
+                                            <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-xs font-black">
+                                                <?= number_format($vm->total_vendido, 0) ?> unidades
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
                 <!-- TABLA DE STOCK (Se oculta si es Alfredo) -->
                 <?php if(!$is_alfredo): ?>
@@ -174,7 +204,7 @@
                     <div class="px-8 py-6 border-b border-slate-100 bg-white">
                         <h3 class="font-black text-slate-800 flex items-center gap-3 text-lg text-uppercase">
                             <span class="w-2 h-6 bg-blue-600 rounded-full"></span>
-                            Catálogo y Stock por Distribuidor
+                            Cat&aacute;logo y Stock por Distribuidor
                         </h3>
                     </div>
                     <div class="overflow-x-auto">
@@ -219,9 +249,7 @@
                                     </td>
                                     <td class="px-4 py-4 text-right font-bold text-slate-400 text-xs">Bs. <?= number_format($pd->precio_venta, 2) ?></td>
                                 </tr>
-                                <?php endforeach; else: ?>
-                                    <tr><td colspan="5" class="px-8 py-20 text-center text-slate-400 italic font-medium">No hay productos registrados para este filtro.</td></tr>
-                                <?php endif; ?>
+                                <?php endforeach; endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -249,7 +277,6 @@
                                     <th class="px-4 py-4 font-bold text-right">Stock Final</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100">
                                 <?php if(!empty($ultimos_movimientos)): foreach($ultimos_movimientos as $m): ?>
                                 <tr class="hover:bg-slate-50 transition-all duration-200 group">
                                     <td class="px-4 py-5 text-[11px] text-slate-400 font-bold">
@@ -266,11 +293,7 @@
                                     <td class="px-4 py-5 text-right font-mono text-slate-500 font-bold text-xs"><?= number_format($m->cantidad, 0) ?></td>
                                     <td class="px-4 py-5 text-right font-black text-slate-900"><?= number_format($m->stock_actual, 0) ?></td>
                                 </tr>
-                                <?php endforeach; else: ?>
-                                <tr>
-                                    <td colspan="5" class="px-8 py-20 text-center text-slate-400 italic font-medium">No hay movimientos recientes.</td>
-                                </tr>
-                                <?php endif; ?>
+                                <?php endforeach; endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -316,8 +339,8 @@
 <style>
     /* Estilos personalizados para DataTables en el Dashboard */
     /* Compactar filas y columnas para evitar scroll horizontal */
-    #tabla-stock-bolivia td, #tabla-movimientos-bolivia td, #tabla-alfredo-bolivia td,
-    #tabla-stock-bolivia th, #tabla-movimientos-bolivia th, #tabla-alfredo-bolivia th { 
+    #tabla-stock-bolivia td, #tabla-movimientos-bolivia td, #tabla-alfredo-bolivia td, #tabla-ranking-bolivia td,
+    #tabla-stock-bolivia th, #tabla-movimientos-bolivia th, #tabla-alfredo-bolivia th, #tabla-ranking-bolivia th { 
         padding-left: 1rem !important; 
         padding-right: 1rem !important; 
         padding-top: 0.6rem !important; 
@@ -373,9 +396,10 @@
         };
 
         if ($.fn.DataTable) {
-            $('#tabla-alfredo-bolivia').DataTable(configDT);
-            $('#tabla-stock-bolivia').DataTable(configDT);
-            $('#tabla-movimientos-bolivia').DataTable(configDT);
+            if ($('#tabla-alfredo-bolivia').length) $('#tabla-alfredo-bolivia').DataTable(configDT);
+            if ($('#tabla-ranking-bolivia').length) $('#tabla-ranking-bolivia').DataTable(configDT);
+            if ($('#tabla-stock-bolivia').length) $('#tabla-stock-bolivia').DataTable(configDT);
+            if ($('#tabla-movimientos-bolivia').length) $('#tabla-movimientos-bolivia').DataTable(configDT);
         }
     });
 </script>

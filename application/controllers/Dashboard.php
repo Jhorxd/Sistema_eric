@@ -164,6 +164,22 @@ class Dashboard extends CI_Controller {
             $productos_distribuidor = $this->db->get('productos_bolivia')->result();
         }
 
+        // 7. Ranking de Ventas por Modelo (Todo agrupado)
+        $this->db->select('p.nombre, SUM(vd.cantidad) as total_vendido');
+        $this->db->from('venta_detalles_bolivia vd');
+        $this->db->join('productos_bolivia p', 'vd.id_producto = p.id');
+        $this->db->join('ventas_bolivia v', 'vd.id_venta = v.id');
+        $this->db->where('v.fecha >=', $inicio);
+        $this->db->where('v.fecha <=', $fin . ' 23:59:59');
+        if ($is_alfredo) {
+            $this->db->where('(v.id_distribuidor IS NULL OR v.id_distribuidor = 0)');
+        } elseif ($id_distribuidor) {
+            $this->db->where('v.id_distribuidor', $id_distribuidor);
+        }
+        $this->db->group_by('p.nombre');
+        $this->db->order_by('total_vendido', 'DESC');
+        $ventas_por_modelo = $this->db->get()->result();
+
         return [
             'total_ventas_mes'       => $ventas->total_venta ?? 0,
             'total_pendiente'        => $total_pendiente,
@@ -173,6 +189,7 @@ class Dashboard extends CI_Controller {
             'productos_distribuidor' => $productos_distribuidor,
             'pedidos_alfredo'        => $pedidos_alfredo,
             'is_alfredo'             => $is_alfredo,
+            'ventas_por_modelo'      => $ventas_por_modelo,
             'total_items'            => count($productos_distribuidor)
         ];
     }
