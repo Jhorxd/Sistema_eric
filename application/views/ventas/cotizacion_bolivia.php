@@ -243,7 +243,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex justify-between items-center text-slate-400 font-medium">
+                                    <div id="div_alfredo" class="flex justify-between items-center text-slate-400 font-medium" style="display: none;">
                                         <span>Transferencia alfredo:</span>
                                         <div class="flex items-center gap-2 bg-slate-800 rounded-lg px-2 py-1">
                                             <span class="text-[10px]">Bs.</span>
@@ -491,9 +491,13 @@ document.addEventListener("DOMContentLoaded", function() {
         if ($(this).val() === 'ENVIO') {
             $('#div_destino').slideDown();
             $('#destino').attr('required', true);
+            $('#div_alfredo').slideDown();
         } else {
             $('#div_destino').slideUp();
             $('#destino').removeAttr('required').val('');
+            $('#div_alfredo').slideUp();
+            $('#alfredo').val('0.00');
+            calcularTotales();
         }
     });
 });
