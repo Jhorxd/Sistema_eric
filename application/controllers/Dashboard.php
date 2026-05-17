@@ -60,8 +60,8 @@ class Dashboard extends CI_Controller {
         
         $is_alfredo = ($id_distribuidor == 'alfredo');
 
-        // 1. Ventas del periodo
-        $this->db->select_sum('total_venta');
+        // 1. Ventas del periodo (Descontando comisión si no es Alfredo)
+        $this->db->select("SUM(total_venta - COALESCE(comision_delivery, 0)) as total_venta");
         $this->db->where('fecha >=', $inicio);
         $this->db->where('fecha <=', $fin . ' 23:59:59');
         if ($is_alfredo) {
@@ -75,26 +75,47 @@ class Dashboard extends CI_Controller {
         }
         $ventas = $this->db->get('ventas_bolivia')->row();
 
-        // 2. Pendiente de Depósito (Distribuidores Regulares)
-        // Calculamos: SUM(total_venta - delivery) - SUM(pagos en pagos_distribuidores)
+        // 2. Pendiente de Depósito (Distribuidores Regulares) - APLICANDO FILTROS Y RESTANDO COMISIÓN
         $where_dist = "";
+        $where_dates = " AND v.fecha >= '$inicio' AND v.fecha <= '$fin 23:59:59'";
+
         if ($is_alfredo) {
             $where_dist = "WHERE (v.id_distribuidor IS NULL OR v.id_distribuidor = 0)";
         } elseif ($id_distribuidor) {
             $where_dist = "WHERE v.id_distribuidor = $id_distribuidor";
+        } else {
+            // Si no hay filtro, solo sumamos lo que NO es de Alfredo
+            $where_dist = "WHERE (v.id_distribuidor IS NOT NULL AND v.id_distribuidor != 0)";
         }
 
         $query_pend = $this->db->query("
-            SELECT SUM(v.total_venta - v.comision_delivery - COALESCE(p.total_pagado, 0)) as pendiente
+            SELECT SUM(v.total_venta - COALESCE(v.comision_delivery, 0) - COALESCE(p.total_pagado, 0)) as pendiente
             FROM ventas_bolivia v
             LEFT JOIN (
-                SELECT id_venta, SUM(monto_pagado) as total_pagado 
-                FROM pagos_distribuidores 
+                SELECT id_venta, SUM(monto) as total_pagado 
+                FROM venta_pagos_bolivia 
                 GROUP BY id_venta
             ) p ON v.id = p.id_venta
-            $where_dist
+            $where_dist $where_dates
         ")->row();
         $total_pendiente = $query_pend->pendiente ?? 0;
+
+        // 2.1 Desglose por Distribuidor (Nuevo) - TAMBIÉN CON FILTROS Y COMISIÓN
+        $desglose_distribuidores = $this->db->query("
+            SELECT 
+                d.nombre, 
+                SUM(v.total_venta - COALESCE(v.comision_delivery, 0) - COALESCE(p.total_pagado, 0)) as saldo
+            FROM ventas_bolivia v
+            JOIN distribuidores_bolivia d ON v.id_distribuidor = d.id
+            LEFT JOIN (
+                SELECT id_venta, SUM(monto) as total_pagado 
+                FROM venta_pagos_bolivia 
+                GROUP BY id_venta
+            ) p ON v.id = p.id_venta
+            WHERE v.fecha >= '$inicio' AND v.fecha <= '$fin 23:59:59'
+            GROUP BY d.id
+            HAVING saldo > 1
+        ")->result();
 
         // 3. Alfredo Pending (Suma de saldos de pedidos_alfredo)
         $alfredo_data = $this->db->query("
@@ -188,6 +209,7 @@ class Dashboard extends CI_Controller {
             'ultimos_movimientos'    => $movimientos,
             'productos_distribuidor' => $productos_distribuidor,
             'pedidos_alfredo'        => $pedidos_alfredo,
+            'desglose_distribuidores' => $desglose_distribuidores,
             'is_alfredo'             => $is_alfredo,
             'ventas_por_modelo'      => $ventas_por_modelo,
             'total_items'            => count($productos_distribuidor)

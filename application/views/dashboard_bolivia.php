@@ -198,6 +198,38 @@
                     </div>
                 </div>
 
+                <!-- DESGLOSE POR DISTRIBUIDOR (Solo si no hay filtro de distribuidor) -->
+                <?php if(!$f_dist && !empty($desglose_distribuidores)): ?>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8 border-l-4 border-l-emerald-500">
+                    <div class="px-8 py-6 border-b border-slate-100 bg-white">
+                        <h3 class="font-black text-slate-800 flex items-center gap-3 text-lg text-uppercase">
+                            <i class="fas fa-users text-emerald-500"></i>
+                            Saldos Pendientes por Distribuidor
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
+                                    <th class="px-6 py-4 font-bold">Distribuidor</th>
+                                    <th class="px-6 py-4 font-bold text-right">Saldo Pendiente</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <?php foreach($desglose_distribuidores as $dd): ?>
+                                <tr class="hover:bg-emerald-50/20 transition-all">
+                                    <td class="px-6 py-4 font-black text-slate-700 uppercase"><?= $dd->nombre ?></td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="text-sm font-black text-emerald-600">Bs. <?= number_format($dd->saldo, 2) ?></span>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <!-- TABLA DE STOCK (Se oculta si es Alfredo) -->
                 <?php if(!$is_alfredo): ?>
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
