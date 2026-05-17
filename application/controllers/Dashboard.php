@@ -60,20 +60,36 @@ class Dashboard extends CI_Controller {
         
         $is_alfredo = ($id_distribuidor == 'alfredo');
 
-        // 1. Ventas del periodo (Descontando comisión si no es Alfredo)
-        $this->db->select("SUM(total_venta - COALESCE(comision_delivery, 0)) as total_venta");
-        $this->db->where('fecha >=', $inicio);
-        $this->db->where('fecha <=', $fin . ' 23:59:59');
+        // 1. Ventas del periodo (incluye montos de Transferencia Alfredo)
+        // total_venta en BD ya viene sin el monto de Alfredo (se resta al registrar),
+        // por eso sumamos también los pagos con metodo_pago = 'Transferencia Alfredo'
+        // para reflejar el ingreso real total de ventas en el dashboard.
+        $where_ventas_periodo = "v.fecha >= '$inicio' AND v.fecha <= '{$fin} 23:59:59'";
         if ($is_alfredo) {
-            $this->db->where('(id_distribuidor IS NULL OR id_distribuidor = 0)');
+            $where_ventas_periodo .= " AND (v.id_distribuidor IS NULL OR v.id_distribuidor = 0)";
         } elseif ($id_distribuidor) {
-            $this->db->where('id_distribuidor', $id_distribuidor);
+            $where_ventas_periodo .= " AND v.id_distribuidor = $id_distribuidor";
         }
-        
         if ($producto_nombre) {
-            $this->db->where("id IN (SELECT id_venta FROM venta_detalles_bolivia vd JOIN productos_bolivia p ON vd.id_producto = p.id WHERE p.nombre = '$producto_nombre')");
+            $where_ventas_periodo .= " AND v.id IN (SELECT id_venta FROM venta_detalles_bolivia vd JOIN productos_bolivia p ON vd.id_producto = p.id WHERE p.nombre = '$producto_nombre')";
         }
-        $ventas = $this->db->get('ventas_bolivia')->row();
+
+        // Mismo WHERE pero con alias 'vp' para usar dentro del sub-select de Alfredo
+        $where_alfredo_sub = str_replace('v.', 'vp.', $where_ventas_periodo);
+
+        $ventas = $this->db->query("
+            SELECT 
+                COALESCE(SUM(v.total_venta), 0)
+                + COALESCE((
+                    SELECT SUM(pag.monto)
+                    FROM venta_pagos_bolivia pag
+                    INNER JOIN ventas_bolivia vp ON pag.id_venta = vp.id
+                    WHERE pag.metodo_pago = 'Transferencia Alfredo'
+                      AND {$where_alfredo_sub}
+                ), 0) AS total_venta
+            FROM ventas_bolivia v
+            WHERE {$where_ventas_periodo}
+        ")->row();
 
         // 2. Pendiente de Depósito (Distribuidores Regulares) - APLICANDO FILTROS Y RESTANDO COMISIÓN
         $where_dist = "";
@@ -93,7 +109,8 @@ class Dashboard extends CI_Controller {
             FROM ventas_bolivia v
             LEFT JOIN (
                 SELECT id_venta, SUM(monto) as total_pagado 
-                FROM venta_pagos_bolivia 
+                FROM venta_pagos_bolivia
+                WHERE metodo_pago != 'Transferencia Alfredo'
                 GROUP BY id_venta
             ) p ON v.id = p.id_venta
             $where_dist $where_dates
@@ -109,7 +126,8 @@ class Dashboard extends CI_Controller {
             JOIN distribuidores_bolivia d ON v.id_distribuidor = d.id
             LEFT JOIN (
                 SELECT id_venta, SUM(monto) as total_pagado 
-                FROM venta_pagos_bolivia 
+                FROM venta_pagos_bolivia
+                WHERE metodo_pago != 'Transferencia Alfredo'
                 GROUP BY id_venta
             ) p ON v.id = p.id_venta
             WHERE v.fecha >= '$inicio' AND v.fecha <= '$fin 23:59:59'
