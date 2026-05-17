@@ -4,13 +4,17 @@
 <span class="brand-text font-weight-light">Inventario</span>
 </a>
 <style>
-    <style>
 /* Sidebar AdminLTE Responsive - Mantiene tu HTML original */
 .main-sidebar {
     background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
     border-right: 1px solid #374151;
     box-shadow: 4px 0 20px rgba(0,0,0,0.3);
     transition: all 0.3s ease;
+    min-height: 100% !important;
+    height: auto !important;
+    position: absolute !important;
+    top: 0;
+    bottom: 0;
 }
 
 .brand-link {
@@ -38,8 +42,9 @@
 
 .sidebar {
     padding: 1rem 0.75rem;
-    height: calc(100vh - 70px);
-    overflow-y: auto;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: visible;
     scrollbar-width: thin;
     scrollbar-color: #6b7280 #1f2937;
 }
