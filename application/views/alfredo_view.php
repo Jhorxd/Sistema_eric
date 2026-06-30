@@ -44,7 +44,7 @@
 
         <!-- TABLA DE LIQUIDACIONES -->
         <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
-            <table class="min-w-[900px] w-full text-sm text-left divide-y">
+            <table id="tabla-depositos-alfredo" class="min-w-[900px] w-full text-sm text-left divide-y">
                 <thead class="bg-slate-100 text-slate-700 uppercase text-xs tracking-wider">
                     <tr>
                         <th class="px-4 py-3">ID / Fecha</th>
@@ -60,7 +60,7 @@
                     <?php foreach($pendientes as $p): ?>
                     <tr class="hover:bg-slate-50">
 
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-3" data-order="<?= strtotime($p->fecha_pedido) ?>">
                             <strong>#<?= $p->id_venta ?></strong><br>
                             <small class="text-slate-500">
                                 <?= date('d/m/Y H:i', strtotime($p->fecha_pedido)) ?>
@@ -293,4 +293,67 @@ function verHistorialPagos(id, nombre) {
     });
 
 }
+</script>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function inyectarScript(url) {
+        return new Promise(function(resolve, reject) {
+            var script = document.createElement('script');
+            script.src = url;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    async function inicializarTablaDepositos() {
+        try {
+            if (typeof jQuery === 'undefined') {
+                await inyectarScript("https://code.jquery.com/jquery-3.6.0.min.js");
+            }
+
+            var $ = jQuery;
+
+            if (!$.fn.DataTable) {
+                await inyectarScript("https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js");
+                await inyectarScript("https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js");
+            }
+
+            var $tabla = $('#tabla-depositos-alfredo');
+            if ($tabla.length === 0) return;
+
+            if ($.fn.DataTable.isDataTable('#tabla-depositos-alfredo')) {
+                $tabla.DataTable().destroy();
+            }
+
+            $tabla.DataTable({
+                paging: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                lengthChange: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                responsive: true,
+                order: [[0, "desc"]],
+                columnDefs: [
+                    { orderable: false, targets: 5 }
+                ],
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                }
+            });
+
+            $('#modalPago, #modalHistorial').appendTo('body');
+        } catch (error) {
+            console.error("No se pudo inicializar DataTables en Depósitos a Alfredo:", error);
+        }
+    }
+
+    inicializarTablaDepositos();
+});
 </script>

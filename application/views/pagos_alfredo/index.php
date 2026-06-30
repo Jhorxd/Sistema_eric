@@ -74,7 +74,7 @@
                                     <?= $p->metodo_pago ?>
                                 </span>
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
+                            <td class="px-4 py-3 whitespace-nowrap" data-order="<?= strtotime($p->fecha_pago) ?>">
                                 <div class="font-medium text-slate-700"><?= date('d/m/Y', strtotime($p->fecha_pago)) ?></div>
                                 <div class="text-xs text-slate-400"><?= date('H:i', strtotime($p->fecha_pago)) ?></div>
                             </td>
@@ -103,30 +103,60 @@
 </div>
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
 
 <script>
-    var $j = jQuery.noConflict();
-    $j(document).ready(function() {
-        if ($j.isFunction($j.fn.DataTable)) {
-            $j('#tabla-pagos-alfredo').DataTable({
-                "paging": true,          // PAGINADO ACTIVADO
-                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
-                "pageLength": 10,
-                "lengthChange": true,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "autoWidth": false,
-                "responsive": true,
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                },
-                "order": [[0, "desc"]] 
+document.addEventListener("DOMContentLoaded", function() {
+    function inyectarScript(url) {
+        return new Promise(function(resolve, reject) {
+            var script = document.createElement('script');
+            script.src = url;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    async function inicializarPagosAlfredo() {
+        try {
+            if (typeof jQuery === 'undefined') {
+                await inyectarScript("https://code.jquery.com/jquery-3.6.0.min.js");
+            }
+
+            var $ = jQuery;
+
+            if (!$.fn.DataTable) {
+                await inyectarScript("https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js");
+                await inyectarScript("https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js");
+            }
+
+            var $tabla = $('#tabla-pagos-alfredo');
+            if ($tabla.length === 0) return;
+
+            if ($.fn.DataTable.isDataTable('#tabla-pagos-alfredo')) {
+                $tabla.DataTable().destroy();
+            }
+
+            $tabla.DataTable({
+                paging: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                lengthChange: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                responsive: true,
+                order: [[3, "desc"]],
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                }
             });
+        } catch (error) {
+            console.error("No se pudo inicializar DataTables en Pagos Alfredo:", error);
         }
-    });
+    }
+
+    inicializarPagosAlfredo();
+});
 </script>
