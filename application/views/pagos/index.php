@@ -75,15 +75,12 @@
                     <th class="px-4 py-3 text-center">Ref. Venta</th>
                     <th class="px-4 py-3">Método</th>
                     <th class="px-4 py-3">Nota/Observación</th>
-                    <th class="px-4 py-3 text-right">Monto</th>
+                    <th class="px-4 py-3 text-right">Monto (Venta − Comisión)</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-200">
-                <?php 
-                $total_recaudado = 0;
-                if(!empty($pagos)): 
+                <?php if(!empty($pagos)): 
                     foreach($pagos as $p): 
-                        $total_recaudado += $p->monto; // Nombre de columna real
                 ?>
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-4 py-3 whitespace-nowrap font-medium" data-order="<?= strtotime($p->fecha_pago) ?>">
@@ -108,8 +105,12 @@
                     <td class="px-4 py-3 text-slate-500 italic text-xs">
                         <?= $p->nota ? $p->nota : '<span class="text-slate-300">Sin notas</span>' ?>
                     </td>
-                    <td class="px-4 py-3 text-right font-bold text-slate-900 text-base">
-                        <?= number_format($p->monto, 2) ?> <small>Bs.</small>
+                    <td class="px-4 py-3 text-right font-bold text-slate-900 text-base whitespace-nowrap">
+                        <?php if ($p->monto_neto !== null): ?>
+                            <?= number_format($p->monto_neto, 2) ?> <small>Bs.</small>
+                        <?php else: ?>
+                            <span class="text-slate-400 text-sm font-normal">—</span>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -117,9 +118,9 @@
             </tbody>
             <tfoot class="bg-slate-800 text-white">
                 <tr>
-                    <td colspan="5" class="px-4 py-3 text-right font-bold uppercase tracking-wider">Total Recaudado:</td>
-                    <td class="px-4 py-3 text-right font-bold text-lg text-yellow-400">
-                        <?= number_format($total_recaudado, 2) ?> Bs.
+                    <td colspan="5" class="px-4 py-3 text-right font-bold uppercase tracking-wider">Total Ventas Netas (ventas − comisión):</td>
+                    <td class="px-4 py-3 text-right font-bold text-lg text-yellow-400 whitespace-nowrap">
+                        <?= number_format($total_ventas_netas ?? 0, 2) ?> Bs.
                     </td>
                 </tr>
             </tfoot>

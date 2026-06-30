@@ -29,6 +29,8 @@ public function index() {
         p.metodo_pago,
         p.nota,
         v.nit as venta_nit,
+        v.total_venta,
+        v.comision_delivery,
         d.nombre as distribuidor_nombre
     ');
     $this->db->from('venta_pagos_bolivia p'); 
@@ -55,7 +57,26 @@ public function index() {
     }
 
     $this->db->order_by('p.fecha_pago', 'DESC');
-    $data['pagos'] = $this->db->get()->result();
+    $pagos = $this->db->get()->result();
+
+    $ventas_vistas = [];
+    $total_ventas_netas = 0;
+
+    foreach ($pagos as &$pago) {
+        $neto = max(0, (float)$pago->total_venta - (float)($pago->comision_delivery ?? 0));
+
+        if (!isset($ventas_vistas[$pago->id_venta])) {
+            $ventas_vistas[$pago->id_venta] = true;
+            $pago->monto_neto = $neto;
+            $total_ventas_netas += $neto;
+        } else {
+            $pago->monto_neto = null;
+        }
+    }
+    unset($pago);
+
+    $data['pagos'] = $pagos;
+    $data['total_ventas_netas'] = round($total_ventas_netas, 2);
 
     // 4. Datos para el selector del formulario
     $data['distribuidores'] = $this->db->order_by('nombre', 'ASC')->get('distribuidores_bolivia')->result();
