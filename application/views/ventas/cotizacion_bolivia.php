@@ -247,7 +247,7 @@
                                         <span>Transferencia alfredo:</span>
                                         <div class="flex items-center gap-2 bg-slate-800 rounded-lg px-2 py-1">
                                             <span class="text-[10px]">Bs.</span>
-                                            <input type="number" name="alfredo" id="alfredo" class="bg-transparent border-none text-white text-right w-16 outline-none p-0" step="0.01" value="0.00">
+                                            <input type="number" name="alfredo" id="alfredo" class="bg-transparent border-none text-white text-right w-16 outline-none p-0" step="0.01" min="0" value="0.00">
                                         </div>
                                     </div>
                                 </div>
@@ -432,17 +432,65 @@ document.addEventListener("DOMContentLoaded", function() {
         calcularTotales();
     });
 
-    function calcularTotales() {
+    function calcularTotales(mostrarAvisoAlfredo) {
         var subtotalProductos = 0;
         $('.subtotal-text').each(function() { subtotalProductos += parseFloat($(this).text()) || 0; });
+
         var alfredo = parseFloat($('#alfredo').val()) || 0;
-        var totalGeneral = subtotalProductos - alfredo;
+        if (alfredo < 0) {
+            alfredo = 0;
+            $('#alfredo').val('0.00');
+        }
+
+        if (alfredo > subtotalProductos) {
+            alfredo = subtotalProductos;
+            $('#alfredo').val(subtotalProductos.toFixed(2));
+            if (mostrarAvisoAlfredo) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Monto inválido',
+                    text: 'La transferencia Alfredo no puede superar el subtotal de productos (Bs. ' + subtotalProductos.toFixed(2) + ').',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        $('#alfredo').attr('max', subtotalProductos.toFixed(2));
+
+        var totalGeneral = Math.max(0, subtotalProductos - alfredo);
         $('#subtotal_productos_texto').text(subtotalProductos.toFixed(2));
         $('#total_final_texto').text(totalGeneral.toFixed(2));
         $('#total_final_val').val(totalGeneral.toFixed(2));
     }
 
-    $(document).on('input', '#alfredo', function() { calcularTotales(); });
+    $(document).on('input', '#alfredo', function() { calcularTotales(true); });
+
+    $('#formVenta').on('submit', function(e) {
+        calcularTotales(false);
+
+        var total = parseFloat($('#total_final_val').val()) || 0;
+        var alfredo = parseFloat($('#alfredo').val()) || 0;
+        var subtotal = parseFloat($('#subtotal_productos_texto').text()) || 0;
+
+        if (alfredo > subtotal) {
+            e.preventDefault();
+            Swal.fire('Error', 'La transferencia Alfredo no puede ser mayor al subtotal de productos.', 'error');
+            return false;
+        }
+
+        if (subtotal <= 0) {
+            e.preventDefault();
+            Swal.fire('Error', 'Debe registrar al menos un producto con precio válido.', 'error');
+            return false;
+        }
+
+        if (total < 0 || (total === 0 && alfredo <= 0)) {
+            e.preventDefault();
+            Swal.fire('Error', 'El total de la venta no es válido.', 'error');
+            return false;
+        }
+    });
 
     $(document).on('click', '#btn-add-producto', function(e) {
         e.preventDefault();

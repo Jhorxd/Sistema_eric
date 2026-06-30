@@ -35,6 +35,34 @@ class Ventas_bolivia extends CI_Controller {
         return date('Y-m-d H:i:s', $timestamp);
     }
 
+    private function calcular_subtotal_productos($productos_ids, $precios) {
+        $subtotal = 0;
+
+        if (empty($productos_ids) || !is_array($productos_ids)) {
+            return 0;
+        }
+
+        foreach ($productos_ids as $i => $id_p) {
+            if (!empty($id_p)) {
+                $subtotal += (float)($precios[$i] ?? 0);
+            }
+        }
+
+        return round($subtotal, 2);
+    }
+
+    private function calcular_saldo_por_pagar($total_venta, $comision_delivery, $total_pagado) {
+        $monto_neto = (float)$total_venta - (float)$comision_delivery;
+
+        if ($monto_neto < 0) {
+            $monto_neto = 0;
+        }
+
+        $saldo = round($monto_neto - (float)$total_pagado, 2);
+
+        return max(0, $saldo);
+    }
+
 
     public function nueva_cotizacion() {
         $data['distribuidores'] = $this->db->get('distribuidores_bolivia')->result();
@@ -61,7 +89,17 @@ class Ventas_bolivia extends CI_Controller {
             $this->db->where('id_distribuidor', $this->session->userdata('id_distribuidor'));
         }
         $this->db->order_by('id', 'DESC');
-        $data['ventas'] = $this->db->get('ventas_bolivia')->result();
+        $ventas = $this->db->get('ventas_bolivia')->result();
+
+        foreach ($ventas as $venta) {
+            $venta->saldo_por_pagar = $this->calcular_saldo_por_pagar(
+                $venta->total_venta,
+                $venta->comision_delivery,
+                $venta->total_pagado
+            );
+        }
+
+        $data['ventas'] = $ventas;
 
         $this->load->view('layouts/header');
         $this->load->view('layouts/sidebar');
@@ -78,18 +116,54 @@ class Ventas_bolivia extends CI_Controller {
 public function guardar_cotizacion() {
     $this->load->model('Inventario_model');
 
-    $adelanto          = (float)$this->input->post('adelanto');
-    $alfredo           = (float)$this->input->post('alfredo'); 
-    $total             = (float)$this->input->post('total_final'); 
-    $comision_delivery = (float)$this->input->post('comision_delivery'); 
-    $estado_envio      = 'Aprobado'; 
+    $adelanto          = max(0, (float)$this->input->post('adelanto'));
+    $alfredo           = max(0, (float)$this->input->post('alfredo'));
+    $comision_delivery = max(0, (float)$this->input->post('comision_delivery'));
+    $tipo_venta        = $this->input->post('tipo_venta');
+    $estado_envio      = 'Aprobado';
     $fecha_con_hora    = $this->normalizar_fecha_hora($this->input->post('fecha'));
 
+    $productos_ids = $this->input->post('producto_id');
+    $precios       = $this->input->post('precio');
+    $subtotal_productos = $this->calcular_subtotal_productos($productos_ids, $precios);
+
+    if ($subtotal_productos <= 0) {
+        $this->session->set_flashdata('error', 'Debe registrar al menos un producto con precio válido.');
+        redirect('ventas_bolivia/nueva_cotizacion');
+        return;
+    }
+
+    if ($tipo_venta !== 'ENVIO') {
+        $alfredo = 0;
+    }
+
+    if ($alfredo > $subtotal_productos) {
+        $this->session->set_flashdata(
+            'error',
+            'La transferencia Alfredo (Bs. ' . number_format($alfredo, 2) . ') no puede superar el subtotal de productos (Bs. ' . number_format($subtotal_productos, 2) . ').'
+        );
+        redirect('ventas_bolivia/nueva_cotizacion');
+        return;
+    }
+
+    $total = round($subtotal_productos - $alfredo, 2);
+    if ($total < 0) {
+        $this->session->set_flashdata('error', 'El total de la venta no puede ser negativo.');
+        redirect('ventas_bolivia/nueva_cotizacion');
+        return;
+    }
+
+    if ($adelanto > $total) {
+        $adelanto = $total;
+    }
+
     $estado_pago = 'Pendiente';
-    if ($adelanto >= $total && $total > 0) { 
-        $estado_pago = 'Completado'; 
-    } elseif ($adelanto > 0) { 
-        $estado_pago = 'Parcial'; 
+    if ($total <= 0 && $alfredo > 0) {
+        $estado_pago = 'Completado';
+    } elseif ($adelanto >= $total && $total > 0) {
+        $estado_pago = 'Completado';
+    } elseif ($adelanto > 0) {
+        $estado_pago = 'Parcial';
     }
 
     // Determinar ID Distribuidor
@@ -120,9 +194,7 @@ public function guardar_cotizacion() {
         $id_venta = $this->db->insert_id();
 
         // 3. Insertar Detalles y Descontar Inventario
-        $productos_ids = $this->input->post('producto_id'); 
-        $cantidades    = $this->input->post('cant');        
-        $precios       = $this->input->post('precio');      
+        $cantidades = $this->input->post('cant');
 
         if (!empty($productos_ids)) {
             foreach ($productos_ids as $i => $id_p) {
@@ -220,7 +292,11 @@ public function registrar_abono_ajax() {
         $total_p = round((float)$venta->total_pagado, 2);
         $comis_d = round((float)($venta->comision_delivery ?? 0), 2);
         
-        $saldo = round($total_v - $comis_d - $total_p, 2);
+        $saldo = $this->calcular_saldo_por_pagar(
+            $venta->total_venta,
+            $venta->comision_delivery,
+            $venta->total_pagado
+        );
 
         // 5. Determinar nuevo estado
         $nuevo_estado = ($saldo <= 0.01) ? 'Completado' : 'Parcial';

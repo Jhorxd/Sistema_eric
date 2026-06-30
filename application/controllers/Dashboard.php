@@ -105,7 +105,7 @@ class Dashboard extends CI_Controller {
         }
 
         $query_pend = $this->db->query("
-            SELECT SUM(v.total_venta - COALESCE(v.comision_delivery, 0) - COALESCE(p.total_pagado, 0)) as pendiente
+            SELECT SUM(GREATEST(0, v.total_venta - COALESCE(v.comision_delivery, 0)) - COALESCE(p.total_pagado, 0)) as pendiente
             FROM ventas_bolivia v
             LEFT JOIN (
                 SELECT id_venta, SUM(monto) as total_pagado 
@@ -121,7 +121,7 @@ class Dashboard extends CI_Controller {
         $desglose_distribuidores = $this->db->query("
             SELECT 
                 d.nombre, 
-                SUM(v.total_venta - COALESCE(v.comision_delivery, 0) - COALESCE(p.total_pagado, 0)) as saldo
+                SUM(GREATEST(0, v.total_venta - COALESCE(v.comision_delivery, 0)) - COALESCE(p.total_pagado, 0)) as saldo
             FROM ventas_bolivia v
             JOIN distribuidores_bolivia d ON v.id_distribuidor = d.id
             LEFT JOIN (

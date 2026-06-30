@@ -14,6 +14,40 @@
         display: block !important;
     }
 
+    /* Modal de detalle: evitar recorte arriba con contenido alto */
+    #modalDetalle.modal {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        padding: 2rem 1rem !important;
+    }
+    body.layout-navbar-fixed #modalDetalle.modal {
+        padding-top: 2rem !important;
+    }
+    #modalDetalle .modal-dialog {
+        margin: 0 auto !important;
+        max-width: 900px;
+        width: calc(100% - 2rem);
+        height: auto !important;
+        min-height: 0 !important;
+        display: block !important;
+        position: relative !important;
+        top: auto !important;
+        transform: none !important;
+    }
+    #modalDetalle.modal.fade .modal-dialog,
+    #modalDetalle.modal.show .modal-dialog {
+        transform: none !important;
+    }
+    #modalDetalle .modal-content {
+        max-height: calc(100vh - 4rem);
+        display: flex;
+        flex-direction: column;
+    }
+    #modalDetalle .modal-body {
+        overflow-y: auto;
+        max-height: calc(100vh - 11rem);
+    }
+
     /* Estilos Responsivos para Listado de Ventas - Versión Completa y Organizada */
     @media (max-width: 1024px) {
         #tabla-listado-ventas thead { display: none; }
@@ -185,8 +219,7 @@
                     <tbody class="divide-y divide-slate-100">
 
                         <?php foreach($ventas as $v): 
-                            $saldo_inicial = $v->total_venta - $v->comision_delivery;
-                            $saldo = $saldo_inicial - $v->total_pagado;
+                            $saldo = $v->saldo_por_pagar ?? max(0, max(0, $v->total_venta - $v->comision_delivery) - $v->total_pagado);
 
                             $badge_pago = ($v->estado_pago == 'Completado')
                                 ? 'bg-green-100 text-green-700'
@@ -302,11 +335,11 @@
 
 </div>
 
-<div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog">
+<div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog" aria-labelledby="modalDetalleLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg shadow-lg">
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title"><i class="fas fa-file-invoice-dollar mr-2"></i> Detalle de la Venta</h5>
+                <h5 class="modal-title" id="modalDetalleLabel"><i class="fas fa-file-invoice-dollar mr-2"></i> Detalle de la Venta</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
@@ -513,6 +546,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 "order": [[0, "desc"]],
                 "language": { "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" }
             });
+
+            jQuery('#modalDetalle').appendTo('body');
 
             // Re-vincular tus eventos de detalle aquí
             jQuery(document).on('click', '.btn-ver-detalle', function() {

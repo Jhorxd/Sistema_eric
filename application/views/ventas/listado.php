@@ -6,6 +6,40 @@
 .swal-input-custom{
     @apply block mx-auto w-4/5;
 }
+
+/* Modal de detalle: evitar recorte arriba con contenido alto */
+#modalDetalle.modal {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: 2rem 1rem !important;
+}
+body.layout-navbar-fixed #modalDetalle.modal {
+    padding-top: 2rem !important;
+}
+#modalDetalle .modal-dialog {
+    margin: 0 auto !important;
+    max-width: 900px;
+    width: calc(100% - 2rem);
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+}
+#modalDetalle.modal.fade .modal-dialog,
+#modalDetalle.modal.show .modal-dialog {
+    transform: none !important;
+}
+#modalDetalle .modal-content {
+    max-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+}
+#modalDetalle .modal-body {
+    overflow-y: auto;
+    max-height: calc(100vh - 11rem);
+}
 </style>
 
 <div class="md:ml-64 min-h-screen bg-slate-50 pt-20">
@@ -165,11 +199,11 @@
 
 </div>
 
-<div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog">
+<div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog" aria-labelledby="modalDetalleLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg shadow-lg">
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title"><i class="fas fa-file-invoice-dollar mr-2"></i> Detalle de la Venta</h5>
+                <h5 class="modal-title" id="modalDetalleLabel"><i class="fas fa-file-invoice-dollar mr-2"></i> Detalle de la Venta</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
@@ -392,6 +426,8 @@ document.addEventListener("DOMContentLoaded", function() {
         } catch (e) {
             console.error("Error en inicialización:", e);
         }
+
+        jQuery('#modalDetalle').appendTo('body');
 
         // Delegación de eventos para el botón Ver Detalle
         jQuery(document).on('click', '.btn-ver-detalle', function() {

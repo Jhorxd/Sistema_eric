@@ -86,7 +86,7 @@
                         $total_recaudado += $p->monto; // Nombre de columna real
                 ?>
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-4 py-3 whitespace-nowrap font-medium">
+                    <td class="px-4 py-3 whitespace-nowrap font-medium" data-order="<?= strtotime($p->fecha_pago) ?>">
                         <?= date('d/m/Y', strtotime($p->fecha_pago)) ?><br>
                         <span class="text-xs text-slate-400"><?= date('H:i', strtotime($p->fecha_pago)) ?></span>
                     </td>
@@ -129,39 +129,73 @@
     </section>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    var $j = jQuery.noConflict();
-    $j(document).ready(function() {
-        
-        // 1. Select2
-        $j('.select2').select2({
-            theme: 'bootstrap4',
-            allowClear: true,
-            placeholder: '-- Seleccionar --'
+document.addEventListener("DOMContentLoaded", function() {
+    function inyectarScript(url) {
+        return new Promise(function(resolve, reject) {
+            var script = document.createElement('script');
+            script.src = url;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
         });
+    }
 
-        // 2. DataTables
-        if ($j.isFunction($j.fn.DataTable)) {
-            $j('#tabla-pagos').DataTable({
-                "paging": true,
-                "lengthChange": true,
-                "searching": true, // Activado para búsqueda rápida en los resultados filtrados
-                "ordering": true,
-                "info": true,
-                "autoWidth": false,
-                "responsive": true,
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                },
-                "order": [[0, "desc"]] // Por fecha de pago
+    async function inicializarPagosDistribuidores() {
+        try {
+            if (typeof jQuery === 'undefined') {
+                await inyectarScript("https://code.jquery.com/jquery-3.6.0.min.js");
+            }
+
+            var $ = jQuery;
+
+            if (!$.fn.DataTable) {
+                await inyectarScript("https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js");
+                await inyectarScript("https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js");
+            }
+
+            if ($.fn.select2) {
+                $('.select2').select2({
+                    theme: 'bootstrap4',
+                    allowClear: true,
+                    placeholder: '-- Seleccionar --',
+                    width: '100%'
+                });
+            }
+
+            var $tabla = $('#tabla-pagos');
+            if ($tabla.length === 0) return;
+
+            if ($.fn.DataTable.isDataTable('#tabla-pagos')) {
+                $tabla.DataTable().destroy();
+            }
+
+            $tabla.DataTable({
+                paging: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                lengthChange: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                responsive: true,
+                order: [[0, "desc"]],
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                }
             });
+        } catch (error) {
+            console.error("No se pudo inicializar DataTables en pagos de distribuidores:", error);
         }
-    });
+    }
+
+    inicializarPagosDistribuidores();
+});
 </script>
