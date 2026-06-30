@@ -7,14 +7,16 @@
     @apply block mx-auto w-4/5;
 }
 
-/* Modal de detalle: evitar recorte arriba con contenido alto */
+/* Modal de detalle: centrado en pantalla con scroll interno si es alto */
 #modalDetalle.modal {
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    padding: 2rem 1rem !important;
+    padding: 1rem !important;
 }
-body.layout-navbar-fixed #modalDetalle.modal {
-    padding-top: 2rem !important;
+#modalDetalle.modal.show {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 #modalDetalle .modal-dialog {
     margin: 0 auto !important;
@@ -22,23 +24,18 @@ body.layout-navbar-fixed #modalDetalle.modal {
     width: calc(100% - 2rem);
     height: auto !important;
     min-height: 0 !important;
-    display: block !important;
+    flex-shrink: 0;
     position: relative !important;
-    top: auto !important;
-    transform: none !important;
-}
-#modalDetalle.modal.fade .modal-dialog,
-#modalDetalle.modal.show .modal-dialog {
-    transform: none !important;
 }
 #modalDetalle .modal-content {
-    max-height: calc(100vh - 4rem);
+    max-height: calc(100vh - 2rem);
     display: flex;
     flex-direction: column;
 }
 #modalDetalle .modal-body {
     overflow-y: auto;
-    max-height: calc(100vh - 11rem);
+    flex: 1 1 auto;
+    min-height: 0;
 }
 </style>
 
@@ -200,7 +197,7 @@ body.layout-navbar-fixed #modalDetalle.modal {
 </div>
 
 <div class="modal fade" id="modalDetalle" tabindex="-1" role="dialog" aria-labelledby="modalDetalleLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg shadow-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered shadow-lg">
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title" id="modalDetalleLabel"><i class="fas fa-file-invoice-dollar mr-2"></i> Detalle de la Venta</h5>
@@ -428,6 +425,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         jQuery('#modalDetalle').appendTo('body');
+        jQuery('#modalDetalle').on('shown.bs.modal', function () {
+            this.scrollTop = 0;
+        });
 
         // Delegación de eventos para el botón Ver Detalle
         jQuery(document).on('click', '.btn-ver-detalle', function() {

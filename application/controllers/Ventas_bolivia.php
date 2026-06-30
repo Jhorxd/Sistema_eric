@@ -63,6 +63,20 @@ class Ventas_bolivia extends CI_Controller {
         return max(0, $saldo);
     }
 
+    private function determinar_estado_pago($total_venta, $comision_delivery, $total_pagado) {
+        $saldo = $this->calcular_saldo_por_pagar($total_venta, $comision_delivery, $total_pagado);
+
+        if ($saldo <= 0.01) {
+            return 'Completado';
+        }
+
+        if ((float)$total_pagado > 0) {
+            return 'Parcial';
+        }
+
+        return 'Pendiente';
+    }
+
 
     public function nueva_cotizacion() {
         $data['distribuidores'] = $this->db->get('distribuidores_bolivia')->result();
@@ -97,6 +111,19 @@ class Ventas_bolivia extends CI_Controller {
                 $venta->comision_delivery,
                 $venta->total_pagado
             );
+
+            $estado_correcto = $this->determinar_estado_pago(
+                $venta->total_venta,
+                $venta->comision_delivery,
+                $venta->total_pagado
+            );
+
+            if ($venta->estado_pago !== $estado_correcto) {
+                $this->db->where('id', $venta->id)->update('ventas_bolivia', [
+                    'estado_pago' => $estado_correcto
+                ]);
+                $venta->estado_pago = $estado_correcto;
+            }
         }
 
         $data['ventas'] = $ventas;
@@ -157,14 +184,7 @@ public function guardar_cotizacion() {
         $adelanto = $total;
     }
 
-    $estado_pago = 'Pendiente';
-    if ($total <= 0 && $alfredo > 0) {
-        $estado_pago = 'Completado';
-    } elseif ($adelanto >= $total && $total > 0) {
-        $estado_pago = 'Completado';
-    } elseif ($adelanto > 0) {
-        $estado_pago = 'Parcial';
-    }
+    $estado_pago = $this->determinar_estado_pago($total, $comision_delivery, $adelanto);
 
     // Determinar ID Distribuidor
     $id_distribuidor = $this->input->post('id_distribuidor');
@@ -299,7 +319,11 @@ public function registrar_abono_ajax() {
         );
 
         // 5. Determinar nuevo estado
-        $nuevo_estado = ($saldo <= 0.01) ? 'Completado' : 'Parcial';
+        $nuevo_estado = $this->determinar_estado_pago(
+            $venta->total_venta,
+            $venta->comision_delivery,
+            $venta->total_pagado
+        );
 
         // 6. Actualizar el estado de la venta
         $this->db->where('id', $id_venta);
